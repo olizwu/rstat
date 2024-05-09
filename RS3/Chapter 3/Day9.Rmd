@@ -1,0 +1,152 @@
+---
+title: "Day9"
+author: "Olivia Wu"
+date: "2024-03-12"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(car)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+RT <- read_csv("csv/CSV Data Set Files by Descriptive Title/RailsTrails.csv")
+LB <- read_csv("csv/CSV Data Set Files by Descriptive Title/LewyBody2Groups.csv")
+MLB <- read_csv("csv/CSV Data Set Files by Descriptive Title/MLBStandings2016.csv")
+setwd("Chapter 3")
+```
+\section*{Problem 3.12}
+\begin{enumerate}
+  \item[a)] $Mrate = \beta_0 + \beta_1 BodySize + \beta_2 I fgp + \beta_3BodySize\cdot Ifgp + \epsilon$
+  \item[b)] $Mrate = \beta_0 + \beta_1 BodySize + $\textcolor{red}{$\beta_3 Ifgp$}$ + \epsilon$
+  \item[c)] Full: $Mrate = \beta_0 + \beta_1 BodySize + \beta_2 I fgp + \beta_3BodySize\cdot Ifgp + \epsilon$ 
+  
+  \quad Reduced: $Mrate = \beta_0 + \beta_1 BodySize + \epsilon$
+\end{enumerate}
+
+\section*{Problem 3.14}
+Part (a) would have 53-3-1=49 degrees of freedom, and Part (b) would have 53-2-1=50 degrees of freedom.
+
+\section*{Problem 3.48}
+\quad a) Houses with garages have a simlar price distribution as houses without garages. They tend to be hihger, however, and they have slightly more variability. A t-test reveals a statistically significant difference between the mean prices of houes with and without garages.
+
+```{r, out.width="60%", echo=FALSE}
+boxplot(adj2007~garagegroup, data=RT, col=c("skyblue","pink"),
+        main="Price vs. Garage",
+        xlab="Garage",
+        ylab="Price",
+        names=c("No", "Yes"))
+```
+
+```{r, echo=FALSE}
+yesG <- RT$adj2007[RT$garagegroup%in%"yes"]
+noG<-RT$adj2007[RT$garagegroup%in% "no"]
+t.test(x=yesG, y= noG, alternative="greater")
+
+```
+
+\quad b) $\hat{Adj2007} = 388.204 - 54.427Distance$. As the distance between a house and a trail increases by one mile, we expect the price of that house to decrease by \$54,427.
+
+```{r, echo=FALSE}
+model <- lm(adj2007~distance, data=RT)
+summary(model)
+```
+
+\quad c) $\hat{Adj2007} = 365.103 - 51.025Distance + 37.892 I garagegroup$ As the distance between a house and a trail increases by one mile, we expect the price of that house to decrease by \$51,025. If the house has a garage, we expect the price to increase by \$37,892.
+```{r, echo=FALSE}
+model1 <- lm(adj2007~distance+garagegroup, data=RT)
+summary(model)
+```
+
+\quad d) Houses without garages would decrease \$46,302 for each mile, and houes with garages would decrease $46,302 + 9,878 = \$56,180$ for each mile. The coefficient of the interaction term has a $p$-value of 0.611 > 0.05, so there is not enough evidence to show this difference in rates is statistically significant.
+
+```{r, echo=FALSE}
+model2 <- lm(adj2007~distance+garagegroup+distance*garagegroup, data=RT)
+summary(model)
+```
+
+\quad e) The $p$-value is 0.1034 > 0.05, so we can not say the terms involving garage space are significant to the model.
+```{r, echo=FALSE}
+anova(model, model2)
+```
+
+\section*{Problem 3.49}
+\quad a) $\hat{logAdj2007} + 5.418 - 0.049logDistance + 0.593logSquareFeet + 0.057 NumFullBaths$
+
+\quad $R^2 = 0.7834$, so 78.34\% of the variability in logAdj2007 is explained by this model. All terms are statistically significant because their $p$-values are small.
+```{r, echo=FALSE}
+logAdj2007 <- log(RT$adj2007)
+logDistance <- log(RT$distance)
+logSquareFeet <- log(RT$squarefeet)
+NumFullBaths <- RT$no_full_baths
+model1 <- lm(logAdj2007 ~ logDistance + logSquareFeet + NumFullBaths)
+summary(model1)
+```
+
+\quad b) The residuals are all randomly scattered and show no visible pattern. The variance is uniform.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(resid(model1)~fitted(model1), main="Residual vs. Fitted", xlab="Fitted", ylab="Residual")
+abline(0,0,col="blue")
+```
+
+\quad c) $\hat{logAdj2007} = 5.545 - 0.041logDistance + 0.355logSquareFeet- 0.049NumFullBaths -0.025logDistance\cdot logSquareFeet + 0.172 logSquareFeet \cdot NumFullbaths - 0.009 logDistance \cdot NumFullBaths + 0.0183 logDistance \cdot logSquareFeet \cdot NumFullBaths$
+
+\quad Fewer terms are statistically significant compared to the model from part (a). $R^2 = 0.8$ has increased.
+```{r, echo=FALSE}
+model2 <- lm(logAdj2007 ~ logDistance + logSquareFeet + NumFullBaths
+             + logDistance*logSquareFeet + logSquareFeet*NumFullBaths + NumFullBaths*logDistance
+             +logDistance*logSquareFeet*NumFullBaths)
+summary(model2)
+```
+
+\quad d) Since $p=0.09 > 0.05$, there is not enough evidence to show that any of the interaction predictors adds significantly to the simple model.
+```{r, echo=FALSE}
+anova(model1, model2)
+```
+
+\section*{Problem 3.52}
+\quad a) $\hat{MMSE} = -0.585 + 2.318 APC - 1.85 Type - 0.973 APC \cdot Type$
+
+\quad When Type is DLB, the equation is $\hat{MMSE} = -0.585 + 2.318 APC$
+
+\quad When Type is DLB/AD, the equation is $\hat{MMSE} = -2.435 + 1.345 APC$
+```{r, echo=FALSE}
+model1 <- lm(MMSE ~ APC + Type + APC*Type, data=LB)
+summary(model1)
+```
+
+\quad b) The $p$-value from the output is $0.449> 0.05$, so the interaction term is not needed.
+
+\quad c) The $p$-value is 0.2744 > 0.05, which means that the complexity added by the model regressed on Type does not add anything significant.
+```{r}
+model2 <- lm(MMSE ~ APC, data=LB)
+anova(model2, model1)
+```
+
+\section*{Problem 3.56}
+Here are the correlations between WinPct and other numeric variables.
+```{r,echo=FALSE}
+cor(MLB$WinPct, MLB[,-c(1:2)])
+```
+
+We can begin with a model that uses predictors with high correlation (WHIP and HitsAllowed) and add a predictor with low correlation (Doubles).
+
+```{r}
+model1 <- lm(WinPct ~ WHIP + HitsAllowed, data=MLB)
+summary(model1)
+model2 <- lm(WinPct ~ WHIP + HitsAllowed + Doubles,data=MLB)
+summary(model2)
+```
+
+We see that the adjusted $^2$ decreases from 0.5969 to 0.5873.

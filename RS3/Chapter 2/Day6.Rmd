@@ -1,0 +1,154 @@
+---
+title: "Day6"
+author: "Olivia Wu"
+date: "2024-02-27"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+USstamp <- read_csv("csv/CSV Data Set Files by Descriptive Title/USstamps.csv")
+USstamp <- USstamp[-c(1,2,3,4),]
+Brees <- read_csv("csv/CSV Data Set Files by Descriptive Title/BreesPass.csv")
+Pines <- read_csv("csv/CSV Data Set Files by Descriptive Title/Pines.csv")
+BBall <- read_csv("csv/CSV Data Set Files by Descriptive Title/BaseballTimes2017.csv")
+setwd("Chapter 2")
+```
+<!-- Chapter 2 exercises Page 77-81: # 9–10, 23, 27, 31, 33, 54 -->
+
+\section*{Problem 2.9}
+\quad a) All the $r^2$ tells us is how much variability of the response variable is explained by the model. The model could have curvature and still have a high $r^2$, so it does not indicate the linear relationship is the best model.
+
+\quad b) A low $r^2$ would indicate that the linear relationship is not the best model. \textcolor{red}{Linear data with high variability and error can still produce a low $r^2$}
+
+
+\section*{Problem 2.10}
+\quad a) Width decreases ($\frac{1}{n}$ decreases)
+
+\quad b) width decreases ($\frac{1}{\sum(x-\bar{x})^2}$ decreases)
+
+\quad c) width increases ($\sigma_\epsilon$ increases)
+
+\quad d) width increases ($x^{*} - \bar{x}$ increases)
+
+\section*{Problem 2.23}
+\quad a) The $r^2$ is 0.9853. 98.53\% of the variaility in postal rates is explained by the model \[ \hat{Price} = -1,647 + 0.841(Year)\]
+
+```{r, echo=FALSE}
+model <- lm(Price~Year, data=USstamp)
+# plot(Price~Year, data=USstamp)
+# abline(model, col="blue")
+summary(model)
+```
+
+\quad b) The $p$-value for our slope is less than 0.05, so there is a significant linear relationship between postal rates and year.
+
+\quad c) The $F$-statistic is 1273.1, and it has a $p$-value less than 0.05. This shows that $Year$ is an effective predictor of $Price$.
+
+```{r, echo=FALSE}
+anova(model)
+```
+
+\section*{Problem 2.27}
+\quad a) $\hat{Yards} = 86.140 + 5.691(Attempts)$
+
+```{r, echo=FALSE}
+plot(Yards~Attempts, data=Brees, main="Yardage vs. Number of Passes", 
+     xlab="Number of Passes",
+     ylab="Yardage")
+model <- lm(Yards~Attempts, data=Brees)
+abline(model, col="blue")
+summary(model)
+```
+
+\quad b) No; the y-intercept is not 0.
+
+\quad c) $r^2 = 0.3394$, so 33.94\% of the variability in Brees's yardage per game is explained by knowing how many passes he threw.
+
+\section*{Problem 2.31}
+\quad a) The $p$-value of the slope coefficient is 0.000002 < 0.05, so there is a significant linear relationship between the initial height fo the pine seedlings in 1990 and the height in 1997.
+
+```{r, echo=FALSE}
+model <- lm(Hgt97~Hgt90, data=Pines)
+summary(model)
+
+```
+
+\quad b) $r^2 = 0.02687$, so $2.69\%$ of the variation of the height in 1997 is explained by the model.
+
+\quad c) Tabel shown below
+
+```{r}
+aov <- anova(model)
+aov
+```
+
+\quad d) By finding $\frac{SSModel}{SSTotal}$, we get the same value for $r^2=0.02687$
+```{r}
+SSModel <- aov$`Sum Sq`[1]
+SSTotal <- sum(aov$`Sum Sq`)
+rsq <- SSModel/SSTotal
+rsq
+```
+
+\quad e) The coefficient of determination is extremely low, and I am not happy with this linear model.
+
+\section*{Problem 2.33}
+```{r,echo=FALSE}
+model <- lm(Hgt97~Hgt96, data=Pines)
+summary(model)
+```
+
+\quad a) $t^{*} = 1.963$ 
+
+\quad $\hat{\beta_1} \pm t^{*} SE_{\hat{\beta_1}}$
+
+\quad $= 1.096 \pm 1.963(0.0087)$
+
+\quad $= \boxed{(1.0789, 1.1131)}$
+
+We are 95\% confident that the true slope of the population regression line for predicting 1997 height from 1996 height lies in (1.0789, 1.1131).
+
+\quad b) The value of 1 is not included in our interval. This tells us that we are 95\% confident that the trees are growing from 1996 to 1997.
+
+\quad c) No; if the height of the tree was 0 in 1996, it makes no sense that it would suddenly grow in 1997.
+
+\section*{Problem 2.54}
+\quad a) Runs~Time has the largest correlation coefficient of 0.7449, so it has the strongest correlation.
+```{r}
+cor(BBall$Runs, BBall$Time)
+cor(BBall$Margin, BBall$Time)
+cor(BBall$Pitchers, BBall$Time)
+cor(BBall$Attendance, BBall$Time)
+```
+
+\quad b) For every one increase in runs, we predict the time of a game to increase by 4.181 minutes on average. \[ \hat{Time} = 148.043 + 4.181(Runs) \]
+```{r}
+model <- lm(Time~Runs, data=BBall)
+summary(model)
+```
+
+\quad c) For $\rho$ is the correlation coefficient of the population regression line, we have
+
+\quad \quad $H_0: \rho = 0$
+
+\quad \quad $H_a: \rho > 0$
+
+\quad The test statistic is \[ t=\frac{r\sqrt{n-2}}{\sqrt{1-r^2}} = \frac{0.7449\sqrt{12}}{1-0.7449^2}= 3.868 \] Thus, the $p$-value is 0.0011 < 0.05, so this is significant.
+
+\quad d) There is an unusually large residual in one of the games, so we might have an outlier. Besides that, the residuals display uniform variance and show no other pattern.
+```{r}
+plot(resid(model)~fitted(model), main="Residuals vs. Fitted", xlab="Fitted",ylab="Residuals")
+```

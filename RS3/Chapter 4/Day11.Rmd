@@ -1,0 +1,176 @@
+---
+title: "Day11"
+author: "Olivia Wu"
+date: "2024-04-09"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+CH <- read_csv("csv/CSV Data Set Files by Descriptive Title/CountyHealth.csv")
+GPA <- read_csv("csv/CSV Data Set Files by Descriptive Title/FirstYearGPA.csv")
+GDP <- read_csv("csv/CSV Data Set Files by Descriptive Title/ReligionGDP.csv")
+HP <- read_csv("csv/CSV Data Set Files by Descriptive Title/HighPeaks.csv")
+setwd("Chapter 4")
+```
+
+\section*{Problem 4.8}
+\quad a) $\hat{TsqrtMDs} = -3.17 + 6.79 Hospitals$
+```{r, echo=FALSE}
+Training <- CH[1:35,]
+Holdout <- CH[36:53,]
+Training$TsqrtMDs <- sqrt(Training$MDs)
+modelT <- lm(TsqrtMDs ~ Hospitals, data=Training)
+summary(modelT)
+```
+
+\quad b) The cross-validation correlation is 0.953.
+```{r,ech=FALSE}
+Prediction <- predict(modelT, Holdout)
+Prediction
+cor(Prediction,sqrt(Holdout$MDs))
+```
+
+\quad c) The shrinkage is $0.8332 - 0.908 = -0.075$, which is close to zero, so our coefficient of determinations are similar. The model for our training sample seems to be effective.
+
+\section*{Problem 4.9}
+\quad a) $\hat{GPA} = 1.147 + 0.466 HSGPA + 0.015 HU + 0.199White$
+
+All predictors are significant. The estimated standard deviation of the error term is 0.3773, and $R^2= 0.2842$. This shows that a small percent of variability is explained by the model.
+```{r,echo=FALSE}
+Training <- GPA[1:150,]
+Holdout <- GPA[151:219,]
+modelT <- lm(GPA ~ HSGPA + HU + I(White),data=Training)
+summary(modelT)
+```
+
+\quad b)
+```{r,echo=FALSE}
+Prediction <- predict(modelT, Holdout)
+Prediction
+Error <- Holdout$GPA - Prediction
+Error
+```
+
+\quad c) The mean (-0.059) is reasonably close to 0, and the standard deviation of the error term (0.407) is also close to the one provided by the output.
+```{r}
+mean(Error)
+sd(Error)
+
+```
+
+\quad d) The cross-validation correlation is 0.596.
+```{r,echo=FALSE}
+cor(Holdout$GPA, Prediction)
+```
+
+\quad e) $0.2842 - 0.596^2 = -0.071$. There is little change in the amount of variability explained.
+```{r,echo=FALSE}
+0.2842 - cor(Holdout$GPA, Prediction)^2
+```
+
+\section*{Problem 4.11}
+\quad a)
+
+```{r,echo=FALSE}
+GDP$logGDP <- log(GDP$GDP)
+plot(logGDP~Religiosity, data=GDP, main="log(GDP) vs. Religiosity", pch=16)
+```
+
+\quad b) $\hat{log(GDP)} = 11 - 1.4 Religiosity$
+
+53.88\% of the variability in log(GDP) is explained by this model.
+```{r,echo=FALSE}
+model1 <- lm(logGDP ~ Religiosity, data=GDP)
+summary(model1)
+```
+
+\quad c) For every one percentage point of increase in Religiosity, the GDP of that country tends to decrease by 1.4.
+
+\quad d) The magnitude of the residual for Kuwait is 3.987.
+
+```{r,echo=FALSE}
+plot(rstudent(model1)~predict(model1),main="Studentized Residuals vs. Predicted Values", ylab="Studentized Residuals", xlab="Predicted Values")
+```
+
+\quad e)$\hat{log(GDP)} = 10.8 - 0.998 Religiosity -1.59 Africa - 0.608 Asia + 0.344 MiddleEast -0.803 EastEurope + 0.84 WestEurope$
+```{r,echo=FALSE}
+model2 <- lm(logGDP ~ Religiosity + I(Africa) + I(Asia) + I(MiddleEast) + I(EastEurope) + I(WestEurope) + I(Americas), data=GDP)
+summary(model2)
+
+```
+
+\quad f) For every one percentage point of increase in Religiosity, the GDP of that country tends to decrease by 0.998.
+
+\quad g) We can use a nested $F$-test. The output shows signiicance at the 0.05 level.
+```{r,echo=FALSE}
+anova(model1, model2)
+```
+
+\quad h) The magnitude of the residual for Kuwait is 3.37, which is better than before.
+
+```{r,echo=FALSE}
+plot(rstudent(model2)~predict(model2),main="Studentized Residuals vs. Predicted Values", ylab="Studentized Residuals", xlab="Predicted Values")
+```
+
+\section*{Problem 4.12}
+
+\quad a) We can use backward selection, but removing the predictor with the highest $p$-value (Ascent) reduces the $R^2$ value. We can keep all four predictors.
+```{r,echo=FALSE}
+model <- lm(Time ~ Difficulty + Ascent + Elevation + Length, data=HP)
+summary(model)
+```
+
+\quad b) The residuals look to be randomly scattered and have constant variance, and the normal quantile plot is roughly linear, suggesting that the residuals are normally distributed. There are 3 observations that have unusually high residuals.
+
+```{r,echo=FALSE, out.width="50%"}
+plot(resid(model)~predict(model))
+abline(0,0,col="blue")
+qqnorm(resid(model))
+qqline(resid(model),col="blue")
+```
+
+\quad c) There are three mountains that have residuals greater than 2, and none that are less than -2. These mountains are listed below.
+
+```{r,echo=FALSE}
+studres <- sort(rstudent(model),decreasing=TRUE)
+head(studres)
+tail(studres)
+HP$Peak[c(24, 40, 33)]
+```
+
+\quad d) 
+
+```{r,echo=FALSE}
+leverage <- hatvalues(model)
+sort(leverage,decreasing=TRUE)
+n <- length(leverage)
+hi2 <- 2*(4+1)/n
+hi3 <- 3*hi2/2
+paste("hi2:", hi2, "hi3:", hi3)
+```
+There are four mountains that have a moderately high leverage. They are
+```{r,echo=FALSE}
+HP$Peak[c(45, 1, 44, 35)]
+```
+
+The highest Cook's D is only 0.1558, which is less than 0.5. There are no mountains that are an influential case.
+```{r,echo=FALSE}
+cook <- cooks.distance(model)
+head(sort(cook,decreasing=TRUE))
+```

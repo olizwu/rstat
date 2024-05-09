@@ -1,0 +1,85 @@
+---
+title: "Day6"
+author: "Olivia Wu"
+date: "2024-02-27"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+library(HH)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+txtPrc <- read_csv("csv/CSV Data Set Files by Descriptive Title/TextPrices.csv")
+RT <- read_csv("csv/CSV Data Set Files by Descriptive Title/RailsTrails.csv")
+setwd("Chapter 2")
+```
+\section*{Problem 2.44}
+```{r,include=FALSE}
+model <- lm(Price~Pages, data=txtPrc)
+summary(model)
+```
+\quad a) We are 95\% confident that the true mean of predicted prices of a 450-page textbook lies in (\$51.73, \$74.02).
+
+```{r}
+data <- data.frame(Pages=450)
+predict.lm(model, data, interval="confidence")
+```
+
+\quad b)  We are 95\% confident that the predicted price of a 450-page textbook from the true regression line lies in (\$0.90, \$124.85).
+
+```{r}
+data <- data.frame(Pages=450)
+predict.lm(model, data, interval="prediction")
+```
+
+\quad c) The midpoints of both intervals are the same, which makes sense because it should be the fitted value for a 450-page textbook from the same regression line.
+
+\quad d) The width of the prediction interval is much larger than the width of the confidence interval. This makes sense because the prediction interval is about individual observations, while the confidence interval talks about means.
+
+\quad e) We want to minimize $SE_{\hat{\mu}} = \hat{\sigma_\epsilon}\sqrt{\frac{1}{n}+\frac{(x^{*}-\bar{x})^2}{\sum(x-\bar{x})^2}}$, so we can minimize $(x^{*}-\bar{x})^2$ by setting the number of pages to be about 465.
+
+\quad f) The prediction interval would be: (143.359, 291.782). Since the value of the explanatory variable is 1500, it is way out of the range of values we were given to start with. This is extrapolating from our model, which makes me not as confident in this interval.
+```{r}
+data <- data.frame(Pages=1500)
+predict.lm(model, data, interval="prediction")
+```
+
+\section*{Problem 2.47}
+```{r, echo=FALSE}
+model <- lm(adj2007~distance, data=RT)
+summary(model)
+```
+\quad a) Price = 388.204 - 54.427 $\cdot$ 0.5 = $\boxed{\$360.99}$
+
+\quad b) (177.003, 544.9774)
+```{r}
+data <- data.frame(distance=0.5)
+predict.lm(model, data, interval="prediction")
+```
+
+\quad c) The scatterplot shows a strong curvature, so we are not confident that our predicted price in part (a) is a good measure and we are not confident that our interval in part (b) is good.
+```{r,echo=FALSE}
+plot(adj2007~distance,data=RT,main="Price vs. Distance",xlab="Distance",ylab="Price")
+```
+
+\quad d) We are 90\% confident the log of the price of a house that is 0.5 miles away from a bike trail will be between 5.272 and 6.296.
+```{r}
+RT2 <- data.frame(distance=log(RT$distance),adj2007=log(RT$adj2007))
+model <- lm(adj2007~distance, data=RT2)
+data <- data.frame(distance= log(0.5))
+predict.lm(model, data, interval="prediction")
+plot(adj2007~distance,data=RT2)
+```
+
+\quad e) Converting the interval back to dollars, we get (\$194.89, \$542.51). Compared to our interval from before (\$177.003, \$544.9774), our new interval has a smaller width.

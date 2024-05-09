@@ -1,0 +1,115 @@
+---
+title: "Day12"
+author: "Olivia Wu"
+date: "2024-04-09"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Cater <- read_csv("csv/CSV Data Set Files by Descriptive Title/Caterpillars.csv")
+BB <- read_csv("csv/CSV Data Set Files by Descriptive Title/BaseballTimes2017.csv")
+setwd("Chapter 4")
+```
+
+\section*{Problem 4.13}
+
+If the mother is white, then the birth weight will be about $117.87 - 0 + 0 - 0 = 117.87$ oz.
+
+If the mother is black, then the birth weight will be about $117.87 - 7.31 + 0 - 0 = 110.56$ oz.
+
+If the mother is Hispanic, then the birth weight will be about $117.87 - 0 + 0.65 - 0 = 118.52$ oz.
+
+If the mother is other, then the birth weight will be about $117.87 - 0 + 0 - 0.73 = 117.14$ oz.
+
+\section*{Problem 4.14}
+
+\quad a) Since the $p$-values of the $Hispanic$ and $Other$ predictors is greater than 0.05, we can not say that they are significant.
+
+\quad b) $R^2 = 1.9\%$, so this model explains $1.9\%$ of the variability in the birth weight of a baby.
+
+\quad c) $p<0.05$, so we can reject the null hypothesis and say that at least one of the predictors is important.
+
+\section*{Probem 4.16}
+
+\quad a) $R^2$ = 0.756, so about $76\%$ of the variability in log nitrogen asssimilation is explained by the model.
+```{r,echo=FALSE}
+model1 <- lm(LogNassim ~ LogMass, data=Cater)
+summary(model1)
+```
+
+\quad b) $R^2 = 0.8348$, so about $83\%$ of the variability is explained in this model. This is more than the model from before.
+```{r,echo=FALSE}
+model2 <- lm(LogNassim ~ I(Instar==2) + I(Instar==3) + I(Instar==4) + I(Instar==5), data=Cater)
+summary(model2)
+```
+
+\quad c) When the caterpillar is in stage 2, the log nitrogen assimilation is about -2.572. When it is in stage 3, then the log nitrogen assimilation is about -2.417.
+
+\quad d) $R^2 = 0.8361$, so about $84\%$ of the variability is explained in this model. This is more than the model from before.
+```{r,echo=FALSE}
+model3 <- lm(LogNassim ~ LogMass+I(Instar==2) + I(Instar==3) + I(Instar==4) + I(Instar==5), data=Cater)
+summary(model3)
+```
+
+\quad e) The $R^2$ is similar for both models, so I would check the $p$-value for the $logBodyMass$ predictor. $p=0.168 > 0.05$, so there is not enough evidence to show that $logBodyMass$ is a significant predictor.
+
+\quad f) There are a lot of predictors to check, so we can use a nested $F$ test using the models found in (a) and (d). The $p$ value is less than 0.05, so the indicators of Instar are important.
+```{r,echo=FALSE}
+anova(model1, model3)
+```
+
+\section*{Problem 4.19}
+
+\quad a) 
+
+```{r,echo=FALSE}
+model1 <- lm(Time ~ Pitchers + Attendance, data=BB)
+summary(model1)
+```
+
+\quad b) Let's use $R^2$. $R^2 = 53.07$, so about $53.1\%$ of the variability is expalined by this model.
+
+\quad c)
+```{r,echo=FALSE}
+set.seed(123)
+many <- do(1)*cor(shuffle(Time)~Pitchers + Attendance, data=BB)
+many = many$cor
+head(many)
+```
+
+\quad d)
+```{r,echo=FALSE}
+set.seed(123)
+many <- do(10000)*cor(shuffle(Time)~Pitchers + Attendance, data=BB)
+many = (many$cor)^2
+hist(many, breaks=seq(0, 1, 0.05), xlab="R^2", main="Histogram of Random Samples", col=c(0,0,0,0,0,0,0,0,0,0,"blue","blue"))
+```
+
+\quad e) Find the number of observations that have an $R^2$ greater than $0.5307$, and this divided by 10,000 is our $p$-value. This turns out to be $p = 0.0045 < 0.05$. There is enough evidence to suggest a relationship of predicting Time with Pitchers and Attendance.
+```{r,echo=FALSE}
+count <- 0
+for(i in 1:10000){
+  if(many[i] >= 0.5307)
+    count <- count + 1
+}
+count/10000
+```
+
+\quad f) The summary output shows a $p-$value of 0.0156 for the $F$ statistic. This is greater than the $p$-value from our randomization test, but it is still less than $0.05$.

@@ -1,0 +1,138 @@
+---
+title: "Day15"
+author: "Olivia Wu"
+date: "2024-04-23"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Mouse <- read_csv("csv/CSV Data Set Files by Descriptive Title/MouseBrain.csv")
+Amyloid <- read_csv("csv/CSV Data Set Files by Descriptive Title/Amyloid.csv")
+Meniscus <- read_csv("csv/CSV Data Set Files by Descriptive Title/Meniscus.csv")
+Meniscus$Method <- factor(Meniscus$Method)
+setwd("Chapter 5")
+```
+
+<!-- 6,7, 11, 12, 14, 22, 27, 31, 33, 38, 40 -->
+
+\section*{Problem 5.6}
+B, error terms do not need to be all positivd
+
+\section*{Problem 5.7}
+D
+
+\section*{Problem 5.11}
+\quad a) It is impossible to assign a race of the mother to each baby. Thus, we are not certain about the independent condition, and cannot move forward with inference.
+
+\quad b) We would need the 10\% condition to be satisfied, or we want each group's sample size to be at most 10\% of the population size for each race.
+
+\section*{Problem 5.12}
+\quad a) This is an observational study, so we cannot inference cause-and-effect.
+
+\quad b) We can say that there is an association between those who preferred heavy metal and those who drive fast.
+
+\section*{Problem 5.14}
+\quad a) The number of groups does not matter in an ANOVA test
+
+\quad b) Car age is quantitative.
+
+\quad c) It is not a condition that the sample sizes must be the same across all groups.
+
+\quad d) We can generalize because there was random sampling.
+
+\section*{Problem 5.22}
+\quad a) This is not possible, because the model should be adjusted so that all the residuals can be lowered by a constant, thereby achieving a smaller SSE.
+
+\quad b) This could happen if the negative residual is pretty extreme.
+
+\quad c) This could happen if my predicted result is closer to my actual score than your predicted result was to your actual score.
+
+\quad d) This could happen because of the same reason in c).
+
+\section*{Problem 5.27}
+\quad a) The standard deviations are all similar. Minus has fewer observations and a smaller mean.
+
+```{r, out.width="60%"}
+boxplot(Contacts~Genotype,data=Mouse, col=c("red","blue","green"))
+favstats(Contacts~Genotype,data=Mouse)
+```
+
+\quad b) The standard deviation of residuals are similar across all groups. The residuals are roughly symmetric for each group. Independence is met because no mouse should affect another mouse.
+
+\section*{Problem 5.31}
+\quad a) The lengths of NCI, MCI, and mAD are 19, 21, and 17, respectively. Their means are 336.263, 341.05, and 761.29. Their standard deviations are 435.61, 406.41, and 426.69.
+```{r,include=FALSE}
+
+favstats(Abeta~Group, data=Amyloid)
+```
+
+\quad b) The boxplot for NCI is skewed left, so the normal condition is not met.
+
+```{r,echo=FALSE}
+boxplot(Abeta~Group, data=Amyloid, col=c("red","blue","green"))
+```
+\section*{Problem 5.33}
+\quad a) We calculate the df(4) and SS(10998) of Occupation by subtracting the df and SS of Error from the Total. The $F$-statistic is equal to $\frac{2749}{202} = 13.609$
+
+\quad b) Since df = 4, we know there are 5 groups.
+
+\quad c) Since $p=0 < 0.05$, we reject the null hypothesis. There is enough evidence to suggest that the mean lifetimes are different across the occupation categories.
+
+\section*{Problem 5.38}
+\quad a) $H_0: \mu_1 = \mu_2 = \mu_3$, where $\mu_1, \mu_2, \mu_3$ are the mean stiffness responses for the vertical suture, meniscus arrow, and FasT-Fix methods.
+
+$H_a: $at least one of them is not equal
+
+\quad b) Random assignment was used, so we have met the independence condition. The residuals are roughly normal, and the variance is roughly constant. The standard deviations are close enough (0.693, 1.327).
+
+```{r,echo=FALSE, out.width="50%"}
+FFmodel <- aov(Stiffness~Method, data=Meniscus)
+sd(Stiffness~Method, data=Meniscus)
+qqnorm(FFmodel$residuals)
+qqline(FFmodel$residuals)
+plot(resid(FFmodel)~fitted(FFmodel),pch=19)
+abline(0,0,col="blue")
+```
+
+\quad c) $p=0.02 < 0.05$, so we reject the null hypothesis. There is enough evidence that there is a difference in mean stiffness across methods.
+
+```{r,echo=FALSE}
+summary(FFmodel)
+```
+
+\section*{Problem 5.40}
+\quad a) $H_0: \mu_1 = \mu_2 = \mu_3$, where $\mu_1, \mu_2, \mu_3$ are the mean displacement responses for the vertical suture, meniscus arrow, and FasT-Fix methods.
+
+$H_a: $at least one of them is not equal
+
+\quad b) The residuals are roughly normal, and the variance is roughly constant. The standard deviations are close enough (2.66 vs 4.47).
+```{r,echo=FALSE, out.width="50%"}
+FFmodel <- aov(Displacement~Method, data=Meniscus)
+sd(Displacement~Method, data=Meniscus)
+qqnorm(resid(FFmodel))
+qqline(resid(FFmodel))
+hist(resid(FFmodel))
+```
+
+\quad c) $p=0.014 < 0.05$, so we reject the null hypothesis. There is enough evidence that there is a difference in mean displacement response across methods.
+
+```{r,echo=FALSE}
+summary(FFmodel)
+```

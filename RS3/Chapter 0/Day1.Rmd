@@ -1,0 +1,153 @@
+---
+title: "Day 1"
+author: "Olivia Wu"
+date: "2024-02-05"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Handwriting <- read_csv("csv/CSV Data Set Files by Descriptive Title/Handwriting.csv")
+setwd("Chapter 0")
+
+```
+<!-- HW: Read Chapter 0, pp.1-12. Conceptual and guided problems, pp.12 -16: 4, 5, 8, 11, 13, 16 a-c only, 18, 20, 22 -->
+\textcolor{red}{Red shows the correct answer or where I should have added more detail}
+\section*{Problem 0.4}
+\begin{enumerate}
+  \item[a)] Observational Units: individual players \textcolor{red}{points}\\
+  Explanatory: Type of serve (categorical, jump or standard overhand)\\
+  Response: Frequency of wins \textcolor{red}{Outcome of a point (categorical, win or lose)}
+  \item[b)] Observational Units: Games played in the 2016 and 2017 season of major team sports\\
+  Explanatory: Type of team sport (categorical, baseball, football, basketball, and hockey)\\
+  Response: Frequency of home wins \textcolor{red}{Outcome of home game (categorical, win or lose)}
+  \item[c)] Observational Units: Professional golfers\\
+  Explanatory: Gender (categorical, men and women)\\
+  Response: Average distance a golf ball is driven and the percentage of drives that hit the fairway (quantitative)\\
+\end{enumerate}
+\section*{Problem 0.5}
+\begin{enumerate}
+  \item[a)] The observational units in this study are the 85 nutrition experts
+  \item[b)] This is a controlled experiment \textcolor{red}{because the researchers actively gave randomized treatments to the observational units.}
+  \item[c)] The response variable is the amount of ice cream each subject scooped, which is quantitative.
+  \item[d)] The explanatory variable is the bowl and spoon size each subject was given, which is categorical. The two levels for bowls are 17 oz and 34 oz bowls. The two levels for spoons are 2 oz and 3 oz spoons.
+\end{enumerate}
+\section*{Problem 0.8}
+\begin{enumerate}
+  \item[a)] The response variable is the predicted number of games an NFL team will win, which is quantitative.
+  \item[b)] The explanatory variables are both quantitative, and they are the average points a team scores per game over an entire season and the points allowed per game.
+  \item[c)] The expected wins increases by 1.5.
+  \item[d)] The expected wins increases by 0.9.
+  \item[e)] They should focus on improving offense because more wins are gained with 1 more point scored than 1 less point allowed.
+  \item[f)] This is an observational study.
+\end{enumerate}
+\section*{Problem 0.11}
+\begin{enumerate}
+  \item[a)] When the bowl size increased, the average amount of ice cream scooped also increased for both spoon sizes.
+  \item[b)] When the spoon size increased, the average amount of ice cream scooped increased for both bowl sizes.
+  \item[c)] Increasing the bowl size resulted in a $16\%$ and $13\%$ increase in ice cream scooped for the 2-oz and 3-oz spoons, respectively. Increasing the spoon size resulted in a $33\%$ and $30\%$ increase in ice cream scooped for the 17-oz and 34-oz bowls, respectively. Overall, increasing the size of the spoon appeared to have a greater effect.
+  \item[d)] The effect of the bowl size appears similar for both spoon sizes.
+\end{enumerate}
+\section*{Problem 0.13}
+\begin{enumerate}
+  \item[a)] \begin{align*}
+  \textit{Wins} &=3.6+0.5 \textit{PF} - 0.3 \textit{PA} + \epsilon \\
+  &=3.6+0.5(27) - 0.3(24.25) + \epsilon\\
+  &=\boxed{9.825}+\epsilon
+  \end{align*}
+  \item[b)] $y-\hat{y} = 10-9.825 = \boxed{0.175}$ wins
+  \item[c)] $11-3.04 = \boxed{7.96}$ wins
+\end{enumerate}
+\section*{Problem 0.16}
+\begin{enumerate}
+  \item[a)] Age: negative because the more recent ones should have better technology that allow it to achieve faster speeds safely \\Total length: it depends on the layout of the track \\Max height: positive because there's more potential energy \\Max drop: positive because it contributes greater fall time and acceleration
+  \item[b)] I think it is the maximum vertical drop because the roller coaster will get most of its speed from that.
+  \item[c)] The signs of the coefficients are pretty much what I expected, and the value of the coefficient for length is so small that it could have gone either way (pos or neg).
+\end{enumerate}
+\section*{Problem 0.18}
+\begin{enumerate}
+  \item[a)] Histogram
+\end{enumerate}
+```{r, out.width="80%"}
+hist(Handwriting$Survey2, main="Histogram of Survey 2",
+     xlab = "Percent Correct on Survey 2", ylab = "Individuals")
+```
+This histogram is roughly normal with a center of about $65\%$. It shows us that most people correctly identified $55$-$80\%$ of the handwritings during the second survey.
+\begin{enumerate}
+  \item[b)] $\hat{y} = \mu + \epsilon$ for $\mu > 0.5$
+  \item[c)] Fitted model
+\end{enumerate}
+```{r}
+mu <- mean(Handwriting$Survey2, na.rm=TRUE)
+```
+$\implies \mu=65.03 \implies \hat{y} = 65.03 + \epsilon$
+
+\section*{Problem 0.20}
+\begin{enumerate}
+  \item[a)] The dotplot of residuals looks roughly normal, and the normal probability plot looks linear.
+\end{enumerate}
+```{r, out.width="80%"}
+resid <- Handwriting$Survey2[!is.na(Handwriting$Survey2)] - mu
+stripchart(resid, method="stack", offset=.5, at=0, pch=19, main="Residuals")
+qqnorm(resid, ylab="Residuals", xlab="z-score", main="Normal Probability Plot of Residuals")
+qqline(resid)
+```
+  \begin{enumerate}
+    \item[b)] \textbf{State} $H_0$: $\mu = 50$ \\ $H_a$: $\mu > 50$
+    \\\\\textbf{Plan}
+    \\Random: given $\checkmark$
+    \\Normal: $n=198\geq 30 \checkmark$
+    \\Independent: There is likely more than $203*10=2030$ people in Clark University. $\checkmark$
+    \\\\\textbf{Do}
+\end{enumerate}
+```{r}
+t.test(Handwriting$Survey2, mu=50, alternative="greater")
+```  
+\quad \textbf{Conclude} The $\textit{p}$-value $\approx 0$, so we reject the null hypothesis. There is sufficient evidence to conclude that the subjects are better in gueessing the author's gender than a fair coin.
+\section*{Problem 0.22}
+\begin{enumerate}
+  \item[a)] These grouped boxplots shows that women tend to have a $70\%$ accuracy and men tend to have a $60\%$ accuracy. They both have symmetric distributions, and there is also less variation among women than men. A model would be $\hat{y} = \mu_i + \epsilon$ for $\mu_1$, the population mean for men, and $\mu_2$, the population mean for women.
+\end{enumerate}
+```{r, out.width="80%"}
+boxplot(Survey2~Gender, data=Handwriting,
+        col=c("skyblue","pink"),
+        main="Survey 2 by Gender",
+        xlab="Gender",
+        ylab="Percent Accuracy",
+        names=c("Men","Women"))
+```
+\begin{enumerate}
+  \item[b)] The sample mean for women is $67.71$ and for men is $61.75$. The respective fitted models would be: $\hat{y} = 67.71 + \epsilon$ and $\hat{y}=61.75+\epsilon$.
+  \item[c)] The following dotplot looks normal and the normal probability plot looks roughly linear.
+\end{enumerate}
+```{r, out.width="80%"}
+resid1 <- Handwriting$Survey2[!is.na(Handwriting$Survey2) & Handwriting$Gender %in% 1] - 67.71
+resid2 <- Handwriting$Survey2[!is.na(Handwriting$Survey2) & Handwriting$Gender %in% 0] - 61.75
+resid <- c(resid1, resid2)
+stripchart(resid, method="stack", offset=.5, at=0, pch=19, main="Residuals")
+qqnorm(resid, ylab="Residuals", xlab="z-score", main="Normal Probability Plot of Residuals")
+qqline(resid)
+```
+\newline \textbf{State} $H_0$: $\mu_1-\mu_2=0$ \newline $H_a$: $\mu_1-\mu_2<0$
+\newline \textbf{Plan} The residuals look normal, the survey was done with random sampling, and we assume independence.
+```{r}
+men <- Handwriting$Survey2[!is.na(Handwriting$Survey2) & Handwriting$Gender%in%0]
+wom <- Handwriting$Survey2[!is.na(Handwriting$Survey2) & Handwriting$Gender%in%1]
+t.test(x=men,
+       y=wom,
+       alternative="less",
+       mu=0)
+```
+\begin{enumerate}
+  \item[d)] Since the $\textit{p}$-value is approximately 0, we reject the null hypothesis. There is a difference in accuracies in Survey 2 between men and women.
+\end{enumerate}

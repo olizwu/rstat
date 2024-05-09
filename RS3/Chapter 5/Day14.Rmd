@@ -1,0 +1,98 @@
+---
+title: "Day14"
+author: "Olivia Wu"
+date: "2024-04-18"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+HP <- read_csv("csv/CSV Data Set Files by Descriptive Title/HighPeaks.csv")
+SAT <- read_csv("csv/CSV Data Set Files by Descriptive Title/SATGPA.csv")
+setwd("Chapter 4")
+```
+
+<!-- 5, 9, 13, 15-18 -->
+
+\section*{Problem 5.5}
+\quad a) Variance of several groups = True
+
+\quad b) Mean of one group = False
+
+\quad c) Means of several groups = True
+
+\quad d) Variance of one group = False
+
+\section*{Problem 5.9}
+The three main reasons to randomize the assignment of treatments to units are:
+
+\quad 1) justify the use of a probability model
+
+\quad 2) Protect against bias and confounding
+
+\quad 3) support inference about cause-and-effect
+
+\section*{Problem 5.13}
+\textbf{Major} - Categorical, would have to use ANOVA
+
+\textbf{Sex} - Categorical, can use two-sample $t$ test
+
+\textbf{Class year} - Categorical, would have to use ANOVA
+
+\textbf{Political inclination} - Categorical, would have to use ANOVA
+
+\textbf{Sleep time last night} - Quantitative
+
+\textbf{Study time last week} - Quantitative
+
+\textbf{BMI} - Quantitative
+
+\textbf{Total amount of money spent on textbooks} - Quantitative
+
+\section*{Problem 5.15}
+\quad a) Explanatory: font used on exam
+
+\quad Response: final exam score
+
+\quad b) This is an randomized treatment because the instructor actively (and randomly) assigned fonts to her students.
+
+\quad c) The random assignment takes care of the independence condition. \textcolor{red}{Important!!!}
+
+\section*{Problem 5.16}
+\quad a) Explanatory: main ingredient in dog food
+
+\quad Response: amount of energy that dogs have
+
+\quad b) This is a randomized experiment because the food ingredient was randomly assigned
+
+\quad c) The random assignment takes care of the independence condition.
+
+\section*{Problem 5.17}
+\quad a) The units are each student
+
+\quad b) The treatments are the 4 kinds of fonts: Times, Courier, Helvetica, Comic Sans
+
+\quad c) She would need 10 students in each font category
+
+\section*{Problem 5.18}
+\quad a) the units are the dogs
+
+\quad b) the treatments are the kind of main ingredient: salmon, chicken, and beef
+
+\quad c) Each diet needs 15 dogs on it

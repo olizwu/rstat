@@ -1,0 +1,128 @@
+---
+title: "Day4"
+author: "Olivia Wu"
+date: "2024-02-15"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Cereal <- read_csv("csv/CSV Data Set Files by Descriptive Title/Cereal.csv")
+RtoT <- read_csv("csv/CSV Data Set Files by Descriptive Title/RailsTrails.csv")
+SeaIce <- read_csv("csv/CSV Data Set Files by Descriptive Title/SeaIce.csv")
+setwd("Chapter 1")
+```
+
+\section*{Problem 1.19}
+\quad a) The scatterplot of Calories vs. Sugar is pretty random and shows no particular trend.
+```{r, out.height="35%"}
+plot(Calories~Sugar, data=Cereal, main="Scatterplot of Calories vs. Sugar", xlab="Sugar (grams)")
+```
+
+\quad b) $\hat{Calories} = 87.428 + 2.481 \textit{Sugar}$
+```{r}
+model <- lm(Calories~Sugar, data=Cereal)
+summary(model)
+
+```
+\quad c) On average, an increase of 1 gram of sugar also increases the total calories of a cereal by 2.481 calories.
+
+\section*{Problem 1.21}
+\quad a) $\hat{Calories} = 87.428 + 2.481*10 = \boxed{112.238}$
+
+\quad b) \begin{align*}
+ \text{residual} &= \text{observed} - \text{predicted} \\
+ &= 110 - (87.428 + 2.481)\\
+ &= \boxed{20.091}
+\end{align*}
+
+\quad c) The linear regression model does not appear to be a good summary because there are large residuals.
+
+\section*{Problem 1.25}
+\quad a) There is an overall weak negative relationship between \textit{adj2007} and \textit{distance}. As distance increases, the average value of a house tends to decrease.
+
+```{r, echo=FALSE, out.height="35%"}
+plot(adj2007~distance, data=RtoT)
+```
+
+\quad b) $\hat{Adj2007} = 388.204 - 54.427 \textit{Distance}$
+
+\quad \quad For every mile to the nearest entry point to the rail trail network, we expect the estimated prices of homes in 2007 to decrease by \$54,427.
+
+```{r, echo=FALSE}
+model <- lm(adj2007~distance, data=RtoT)
+summary(model)
+```
+
+\quad c) The regression standard error is 92.13. \textcolor{red}{If the conditions for the model are met} We expect on average, a house price differs from the estimate by \$92,130.
+
+\quad d)
+\quad \quad Linear: The residual plot below is not scattered randomly.
+
+\quad \quad Constant Variance: Residuals increase as the predicted response increases; there is not a uniform spread.
+
+```{r, echo=FALSE, out.height="35%"}
+res <- resid(model)
+fit <- fitted(model)
+plot(fit, res, ylab="Residual", xlab="Fitted House Price Estimate", main="Residual Plot for RailsTrails Regression")
+abline(0,0, col="blue")
+```
+
+\section*{Problem 1.28}
+\quad a) There is a moderately strong negative relationship between year and extent. As the year increases, the extent of sea ice decreases. \textcolor{red}{There is a slight curve towards the end}
+
+```{r, echo=FALSE, out.height="35%"}
+plot(Extent~t, data=SeaIce)
+model <- lm(Extent~t, data=SeaIce, main="Extent vs. Years Since 1978")
+```
+
+\quad b) The residuals spread pretty randomly, so a linear model would be the best fit for this data. \textcolor{red}{There is still some curve}
+
+```{r, echo=FALSE, out.height="60%"}
+res <- resid(model)
+fit <- fitted(model)
+plot(res~fit, main = "Residuals vs Fit", xlab = "Fitted Extent of Ice", ylab = "Residuals")
+```
+
+\quad c) There is a strong negative relationship, so when the year increases, the extent of the sea ice decreases. \textcolor{red}{There is less curvature than in part \textit{a)}}
+
+```{r, echo=FALSE, out.height="35%"}
+ExtentSquared <- SeaIce$Extent^2
+plot(ExtentSquared~SeaIce$t)
+model <- lm(ExtentSquared~SeaIce$t, main="Extent Squared vs. Years Since 1978")
+```
+
+\quad d) The residuals are more random and evenly scattered. This shows improvement from part b)
+
+```{r, echo=FALSE, out.height="35%"}
+res <- resid(model)
+fit <- fitted(model)
+plot(res~fit, main = "Residuals vs Fit", xlab = "Fitted Extent Squared of Ice", ylab = "Residuals")
+```
+
+\quad e) There appears to be a strong linear negative relationship between Extent Cubed and the year.
+```{r, echo=FALSE, out.height="35%"}
+ExtentCubed <- SeaIce$Extent^3
+plot(ExtentCubed~SeaIce$t)
+model <- lm(ExtentCubed~SeaIce$t, main="Extent Cubed vs. Years Since 1978")
+```
+
+The residuals are still evenly and randomly scattered.
+
+```{r, echo=FALSE, out.height="35%"}
+res <- resid(model)
+fit <- fitted(model)
+plot(res~fit, main = "Residuals vs Fit", xlab = "Fitted Extent Cubed of Ice", ylab = "Residuals")
+```
+
+\quad f) The model I would be most comfortable with using a linear model is the cubed one because its scatterplot is most linear.

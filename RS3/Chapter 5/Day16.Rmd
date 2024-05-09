@@ -1,0 +1,127 @@
+---
+title: "Day16"
+author: "Olivia Wu"
+date: "2024-04-25"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+OilD <- read_csv("csv/CSV Data Set Files by Descriptive Title/OilDeapsorbtion.csv")
+Meniscus <- read_csv("csv/CSV Data Set Files by Descriptive Title/Meniscus.csv")
+Meniscus$Method <- factor(Meniscus$Method)
+setwd("Chapter 5")
+```
+
+<!-- Page 251-254 #(53, 55, 57) -->
+
+\section*{Problem 5.53}
+
+\quad a) The differences looke normally distributed, and the standard deviations are close enough (0.847 vs 0.587). The mean of the 10ml oil is about twice as much as the mean of the 5ml oil group (1.325 vs 0.65), and I think there is a difference.
+```{r}
+OilYes <- OilD[OilD$Oil %in% 10,]
+OilNo <- OilD[OilD$Oil %in% 5,]
+stripchart(OilYes$diff,method="stack",pch=19,at=0, offset=1, main="10ml Oil", xlab="Difference in Oil Absorbed", ylim=c(0,7), xlim=c(-1,2))
+```
+
+```{r}
+stripchart(OilNo$diff,method="stack",pch=19,at=0, offset=1, main="5ml Oil", xlab="Difference in Oil Absorbed",ylim=c(0,7), xlim=c(-1,2))
+```
+
+```{r}
+favstats(OilYes$diff)
+favstats(OilNo$diff)
+```
+
+\quad b) The $t$-test shows a signfiicant difference in group means because the $p$-value = 0.006 < 0.05. 0 is not included in the 95\% confidence interval.
+
+```{r}
+t.test(OilYes$diff, OilNo$diff)
+```
+
+\quad c) The normal probability plot is roughly linear so normality is met. Variance is roughly equal. We saw earlier that Since $p<0.05$, we reject the null hypothesis. There is a significant difference in mean differences between the 5ml oil group and 10ml oil group.
+
+```{r, out.width="50%"}
+model <- aov(diff~Oil, data=OilD)
+qqnorm(model$residuals)
+qqline(model$residuals)
+plot(resid(model)~fitted(model),pch=19)
+abline(0,0,col="blue")
+summary(model)
+```
+
+\quad d) The conclusions are the same. Running an ANOVA for two groups produces the same result as running a two sample $t$-test.
+
+\section*{Problem 5.55}
+\quad a) Neither dotplot looks normal; the 10 minute is skewed left. The means are similar (1.025 vs. 0.95) and there is no large difference. The standard deviations are close enough (0.55 vs 0.99)
+
+```{r}
+UltY <- OilD[OilD$Ultra %in% 10,]
+UltN <- OilD[OilD$Ultra %in% 5,]
+stripchart(UltY$diff,method="stack",pch=19,at=0, offset=1, main="10 min Ultrasound", xlab="Difference in Oil Absorbed", ylim=c(0,7), xlim=c(-1,2))
+```
+
+```{r}
+stripchart(UltN$diff,method="stack",pch=19,at=0, offset=1, main="5 min Ultrasound", xlab="Difference in Oil Absorbed",ylim=c(0,7), xlim=c(-1,2))
+```
+
+```{r}
+favstats(UltY$diff)
+favstats(UltN$diff)
+```
+
+\quad b) Since $p=0.77>0.05$, we fail to reject the null hypothesis. There is not enough evidence to suggest that the mean differences in oil absorption is different in the 10 min ultrasound and 5 min ultrasound groups.
+
+```{r,echo=FALSE}
+t.test(UltY$diff, UltN$diff)
+```
+
+\quad c) The normal probability plot is roughly linear so the normal condition is met, however the dotplot shows that the variance is not constant. The anova gave $p=0.77 > 0.05$, so the conclusion is the same as before.
+
+```{r, out.width="50%"}
+model <- aov(diff~Ultra, data=OilD)
+qqnorm(model$residuals)
+qqline(model$residuals)
+hist(model$residuals)
+plot(resid(model)~fitted(model),pch=19)
+abline(0,0,col="blue")
+summary(model)
+```
+
+\quad d) The conclusions are the same.
+
+\section*{Problem 5.57}
+
+\quad a) $H_0: \mu_1 = \mu_2 = \mu_3$ where $\mu_i$ is the average failure load for method $i$.
+
+\quad $H_a:$ at least one of these means is different from the others
+
+\quad b) The residuals are roughly normally distributed, but the variance is not constant. The standard deviation for the third method is over three times as much as the second method.
+
+```{r, out.width="50%"}
+model <- aov(FailureLoad~Method, data=Meniscus)
+qqnorm(model$residuals)
+qqline(model$residuals)
+hist(model$residuals, breaks=10)
+plot(resid(model)~fitted(model),pch=19)
+abline(0,0,col="blue")
+sd(Meniscus$FailureLoad[Meniscus$Method==1])
+sd(Meniscus$FailureLoad[Meniscus$Method==2])
+sd(Meniscus$FailureLoad[Meniscus$Method==3])
+```

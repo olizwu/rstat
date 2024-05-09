@@ -1,0 +1,225 @@
+---
+title: "Day8"
+author: "Olivia Wu"
+date: "2024-03-07"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(car)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Fish <- read_csv("csv/CSV Data Set Files by Descriptive Title/FishEggs.csv")
+Flour <- read_csv("csv/CSV Data Set Files by Descriptive Title/Fluorescence.csv")
+Polls <- read_csv("csv/CSV Data Set Files by Descriptive Title/Pollster08.csv")
+Health <- read_csv("csv/CSV Data Set Files by Descriptive Title/CountyHealth.csv")
+setwd("Chapter 3")
+```
+
+<!-- 10,11,13,15,34,41,42, 43, 44 -->
+\section*{Problem 3.10}
+\begin{enumerate}
+\item[a)] Year and Mileage are likely negatively correlated because an older car will have an earlier manufacture year but more mileage.
+\item[b)] I would expect Mileage to be negatively correlated with Price because people do not want a used car that has been driven a lot.
+\end{enumerate}
+
+\section*{Problem 3.11}
+\begin{enumerate}
+\item[a)] He should pick dealerships with a negative residual because that means the dealership offers lower prices than predicted by his model.
+\item[b)] $Price = \beta_0 + \beta_1 Year + \beta_2 Mileage + \epsilon$
+\item[c)] Adding the interaction variable allows us to make more possible models. The coefficient for this variable should be negative because we want to have a higher price on old cars with less mileage and put a lower price on new cars with high mileage.
+\end{enumerate}
+
+\section*{Problem 3.13}
+\begin{enumerate}
+\item[a)] $Arsenic = \beta_0 + \beta_1 Year + \beta_2 Miles + \beta_3 Year \cdot Miles + \epsilon$
+\item[b)] $Lead = \beta_0 + \beta_1 Year + \beta_2 Iclearn + \beta_3 Year \cdot Iclean + \epsilon$
+\item[c)] $Titanium = \beta_0 + \beta_1 Miles + \beta_2 Miles^2 + \epsilon$
+\item[d)] $Sulfide = \beta_0 + \beta_1 Year + \beta_2 Miles + \beta_3 Depth + \beta_4 Year \cdot Miles + \beta_5 Year \cdot Depth + \beta_6 Miles \cdot Depth + \epsilon$ 
+\end{enumerate}
+
+\section*{Problem 3.15}
+\begin{enumerate}
+\item[a)] 198-3-1 = 194 df
+\item[b)] 198-3-1 = 194 df
+\item[c)] 198-2-1 = 195 df
+\item[d)] 198-6-1 = 191 df
+\end{enumerate}
+
+\section*{Problem 3.34}
+```{r, include=FALSE}
+PctDM <- Fish$PctDM
+Age <- Fish$Age
+plot(PctDM ~ Age)
+model <- lm(PctDM ~ Age)
+summary(model)
+```
+\quad a) There seems to be a weak negative relationship between PctDM and Age. $\hat{PctDM} = 38.702 - 0.21 Age$
+\quad b) About 20\% of the variability is explained by the model.
+\quad c) The p-value for slope os 0.007 < 0.05, so there is evidence to suggest significance.
+\quad d) The residual shows no pattern.
+
+```{r, out.width="50%", echo=FALSE}
+plot(resid(model) ~ predict(model), main="Residual vs. Fitted", xlab="Fitted", ylab = "Residual")
+```
+
+\quad e) The points in September tend to have negative residuals, and there tends to be positive for November. 
+
+```{r, out.width="50%", echo=FALSE}
+col <- c("blue","red")
+map <- col[2-Fish$Sept]
+par(mar=c(5, 4, 4, 10), xpd=TRUE)
+plot(resid(model) ~ predict(model), main="Residual vs. Fitted", xlab="Fitted", ylab = "Residual",col=map,pch=16)
+legend(x="topright",inset=c(-0.4,0), legend=c("September", "November"),  
+       fill = c("blue","red") 
+)
+model <- lm(PctDM~Age + Sept + Age*Sept, data=Fish)
+summary(model)
+```
+
+A regression model with interaction is \[\hat{PctDM} = 39.397 - 0.218Age - 1.276Sept - 0.0214Age\cdot Sept \]
+
+\quad f) The interaction predictor is not significant, so we remove it and try again.
+
+```{r, echo=FALSE}
+model<-lm(PctDM ~ Age+Sept, data=Fish)
+summary(model)
+```
+In the new model, both the slopes for Age and Sept indicators are significant.
+
+\quad g) $R^2 = 0.4298$, so about 42.98\% of the variability in PctDM is explained by the model in (f).
+
+\quad h) Red is November and blue is September. In the model for (f), the residuals for both November and September appear to have means around zero, which is an improvement.
+
+```{r, out.width="60%", echo=FALSE}
+plot(resid(model) ~ predict(model), main="Residual vs. Fitted", xlab="Fitted", ylab = "Residual",col=map,pch=19)
+```
+\section*{Problem 3.41}
+\quad a) A fitted quadratic model would be \[\hat{ProteinProp} = 0.48 - 0.25Calcium - 0.028Calcium^2 \]
+```{r, echo=FALSE}
+Flour$CalciumSq <- Flour$Calcium*Flour$Calcium
+model <- lm(ProteinProp ~ Calcium + CalciumSq, data=Flour)
+summary(model)
+```
+
+\quad b)
+
+```{r, out.width="60%", echo=FALSE}
+plot(ProteinProp~Calcium,data=Flour)
+lines(model$fitted~model$model$Calcium, col="blue")
+```
+
+\quad c) The residual plot shows nonrandom patterns, which raises concerns. The normal quantile plot is roughly linear, so the normality condition is met.
+```{r, out.width="50%", echo=FALSE}
+plot(resid(model)~fitted(model), main="Residual vs. Fitted")
+abline(0,0,col="blue")
+
+qqnorm(resid(model))
+```
+
+\quad d) The computer output shows that the $p$-value for the coefficient of the quadratic term is $5.31 \times 10^{-6} < 0.05$, so the coefficient is siginifcantly different from zero.
+
+\quad e) $R^2=0.8941$, so about 89.41\% of the variability in $ProteinProp$ is explained by the quadratic model.
+
+\section*{Problem 3.42}
+\quad a)\[\hat{ProteinProp} = -6.524 - 3.138Calcium - 0.411CalciumSq - 0.016CalciumCb \]
+```{r, echo=FALSE}
+Flour$CalciumCb <- Flour$Calcium^3
+Flour_ordered <- Flour[order(Flour$Calcium),]
+model <- lm(ProteinProp ~ Calcium + CalciumSq + CalciumCb, data=Flour_ordered)
+summary(model)
+```
+
+\quad b) 
+
+```{r, out.width="60%", echo=FALSE}
+plot(ProteinProp~Calcium,data=Flour_ordered)
+# lines(model$fitted~model$model$Calcium, col="blue")
+lines(model$fitted ~ Flour_ordered$Calcium, col="blue")
+```
+
+\quad c) The residuals show no distinct pattern, and the normal quantile plot is roughly linear.
+
+```{r, out.width="50%", echo=FALSE}
+plot(resid(model)~fitted(model), main="Residual vs. Fitted")
+abline(0,0,col="blue")
+
+qqnorm(resid(model))
+```
+
+\quad d) The $p$-value for the cubic coefficient is significant at the 0.05 significance level. Thus, the parameter is signicantly different from zero.
+
+\quad e) $R^2 = 0.9449$, so 94.49\% of the variability in ProteinProp is explained by the cubic model.
+
+\section*{Problem 3.43}
+\quad a) \[\hat{Margin} = 4.478 - 0.604Days + 0.021 Days^2 \]
+$R^2 = 0.3495$ and $SSE = \text{df}(\sigma_\epsilon)^2 = 99*3.014^2 = 899$
+
+```{r, echo=FALSE}
+Polls$DaysSq <- Polls$Days^2
+model1 <- lm(Margin ~ Days + DaysSq, data=Polls)
+summary(model1)
+anova(model1)
+```
+
+\quad b) \[\hat{Margin} = 5.566 - 0.598Days -10.111Charlie + 0.9207(Days)(Charlie) \]
+$R^2 = 0.417$ and $SSE = 805.85$
+
+```{r, echo=FALSE}
+model2 <- lm(Margin ~ Days + Charlie + Days*Charlie, data=Polls)
+summary(model2)
+anova(model2)
+```
+
+\quad c) \[\hat{Margin} = 3.273 - 0.243Days -8.57Meltdown + 0.5917(Days)(Meltdown) \]
+$R^2 = 0.3239$ and $SSE = 934.57$
+
+```{r, echo=FALSE}
+model3 <- lm(Margin ~ Days + Meltdown + Days*Meltdown, data=Polls)
+summary(model3)
+anova(model3)
+``` 
+
+\quad d) The model with the Charlie indicator has the highest $R^2$, so it appears to be the best model. \textcolor{red}{check all coef are significant, small SSE}
+
+```{r, out.width="70%", echo=FALSE}
+par(mar=c(5, 4, 4, 12), xpd=TRUE)
+plot(Margin~Days, data=Polls)
+lines(model1$fitted.values~model1$model$Days,col="blue")
+lines(model2$fitted.values~model2$model$Days, col="red")
+lines(model3$fitted.values~model3$model$Days, col="purple")
+legend(x="topright",inset=c(-0.7,0), legend=c("Quadratic", "Days and Charlie", "Days and Meltdown"),  
+       fill = c("blue","red","purple") 
+)
+```
+
+\section*{Problem 3.44}
+\quad a) The correlation between Beds and SqrtMDs is greater than with Hospitals (0.949 > 0.923), so Beds is a stronger predictor. 
+
+```{r, echo=FALSE}
+Health$SqrtMDs <- sqrt(Health$MDs)
+cor(Health[,3:5])
+```
+
+\quad b) We find R^2 for each predictor Beds and Hospitals, which comes out to be 0.9 and 0.85, respecitively. Therefore, the model using Beds explains 90\% of the variability in SqrtMDs, and the model using Hospitals explains 80\% of the variability.
+
+\quad c) The computer output shows $R^2 = 0.9454$, so 94.54\% of the variability is explained by the two indicator regression with both Hospitals and Beds.
+```{r, echo=FALSE}
+model <- lm(SqrtMDs ~ Beds + Hospitals + Beds*Hospitals,data=Health)
+summary(model)
+```
+
+\quad d) Both indicators have strong correlations with SqrtMDs.
+
+\quad e) All terms have significant coefficients, as shown in the computer output for part (c).

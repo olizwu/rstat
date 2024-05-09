@@ -1,0 +1,190 @@
+---
+title: "Day2"
+author: "Olivia Wu"
+date: "2024-02-08"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+WL7 <- read_csv("csv/CSV Data Set Files by Descriptive Title/WeightLossIncentive7.csv")
+Run <- read_csv("csv/CSV Data Set Files by Descriptive Title/Marathon.csv")
+D1S <- read_csv("csv/CSV Data Set Files by Descriptive Title/Day1Survey.csv")
+Handwriting <- read_csv("csv/CSV Data Set Files by Descriptive Title/Handwriting.csv")
+setwd("Chapter 0")
+```
+
+<!-- Complete Open-ended exercises from Chapter 0, pp.16-17: 23, 26, 27, 30, 31 -->
+
+\textcolor{red}{Red shows the correct answer or where I should have added more detail}
+
+\section*{Problem 0.23}
+\textbf{Choose:} \quad There is a categorical explanatory variable (Control or Incentive) and the response variable is quantitative.
+\newline Let $\mu_1$ represent the population mean weight loss at seven months for people without financial incentives and $\mu_2$ represent the population mean weight loss at seven months with financial incentives.
+\newline Potential models for the two groups are:
+
+\quad $Y=(\mu_1 + \epsilon)$ \textcolor{red}{$\sim N(0, \sigma_1)$}
+
+\quad $Y=(\mu_2 + \epsilon)$ \textcolor{red}{$\sim N(0, \sigma_2)$}
+
+\textbf{Fit:} \quad The means for the control and incentive groups are $4.639$ and $7.8$ pounds, respectively. Our models may be expressed as:
+
+\quad$Y=(4.639 + \epsilon)$ \textcolor{red}{$\sim N(0, 7.8)$}
+
+\quad$Y=(7.8 + \epsilon)$ \textcolor{red}{$\sim N(0, 12.06)$}
+
+\textbf{Assess:} \quad We conduct a two-sample $\textit{t}$-test for the hypotheses:
+
+\quad$H_0: \mu_1 - \mu_2 = 0$
+
+\quad$H_a: \mu_1 - \mu_2 < 0$ \textcolor{red}{$\mu_1-\mu_2 \neq 0$}
+
+\quad \textbf{Conditions} We assume independence and random assignment is given. The following normal probability plots are roughly linear, so we assume normality.
+```{r, echo=FALSE, out.height="20%"}
+qqnorm(WL7$Month7Loss[WL7$Group %in% "Control"]-mean(WL7$Month7Loss[WL7$Group %in% "Control"]), main="Normal Probability Plot for Control Group")
+qqnorm(WL7$Month7Loss[WL7$Group %in% "Incentive"]-mean(WL7$Month7Loss[WL7$Group %in% "Incentive"]), main="Normal Probability Plot for Incentive Group")
+```
+
+```{r, echo=FALSE}
+t.test(x=WL7$Month7Loss[WL7$Group %in% "Control"],
+       y=WL7$Month7Loss[WL7$Group %in% "Incentive"],
+       alternative = "less",
+       mu = 0)
+```
+Since $p=0.2113 > 0.05$ \textcolor{red}{$p=0.4226>0.05$}, we fail to reject the null hypothesis.
+
+\textbf{Use:} \quad There is not enough evidence to suggest that the beneficial effects of financial incentives still apply to the weight losses at the seven-month point. 
+
+\section*{Problem 0.26}
+```{r, include=FALSE}
+short <- Run$PaceMin[Run$Short %in% 1]
+short <- short[!is.na(short)]
+long <- Run$PaceMin[Run$Short %in% 0]
+long <- long[!is.na(long)]
+```
+\textbf{Choose:} \quad There is a categorical explanatory variable (Short or Long) and the response variable (Pace) is quantitative.
+\newline Let $\mu_1$ represent the population mean pace for short runs and $\mu_2$ represent the population mean pace for long runs.
+\newline Potential models for the two groups are:
+
+\quad $Y=\mu_1 + \epsilon$
+
+\quad $Y=\mu_2 + \epsilon$
+
+\textbf{Fit:} \quad The means for the short and long groups are $7.96$ and $8.16$ minutes per mile, respectively. Our models may be expressed as:
+
+\quad$Y=7.96 + \epsilon$
+
+\quad$Y=8.16 + \epsilon$
+
+\textbf{Assess:} \quad We conduct a two-sample $\textit{t}$-test for the hypotheses:
+
+\quad$H_0: \mu_1 - \mu_2 = 0$
+
+\quad$H_a: \mu_1 - \mu_2 < 0$
+
+\quad \textbf{Conditions} We assume randomness and independence. \textcolor{red}{There are more than 30 observations for both groups, so the normality conditions is satisfied.} This is further supported by the roughly linear normal probability plots shown below.
+```{r, echo=FALSE, out.height="20%"}
+qqnorm(short-mean(short), main="Normal Probability Plot for Short Runs")
+qqnorm(long-mean(long), main="Normal Probability Plot for Long Runs")
+```
+
+```{r, echo=FALSE}
+t.test(x=short,
+       y=long,
+       alternative = "less",
+       mu = 0)
+```
+$p=0 < 0.05$ so we reject the null hypothesis. There is a statistically significant difference in pacing for short and long runs.
+
+\textbf{Use: } \quad There is enough evidence to suggest that the runner tends to run faster on short runs than on long runs.
+
+\section*{Problem 0.27}
+```{r, include=FALSE}
+young_pace <- Run$PaceMin[Run$After2004 %in% 0]
+young_pace <- young_pace[!is.na(young_pace)]
+old_pace <- Run$PaceMin[Run$After2004 %in% 1]
+old_pace <- old_pace[!is.na(old_pace)]
+
+young_dist <- Run$Miles[Run$After2004 %in% 0]
+young_dist <- young_dist[!is.na(young_dist)]
+old_dist <- Run$Miles[Run$After2004 %in% 1]
+old_dist <- old_dist[!is.na(old_dist)]
+```
+\begin{enumerate}
+\item[a)] \textbf{Choose: } \quad $Y = \mu_i + \epsilon$ where $\mu_1$ represents the average running pace from 2002-2004, and $\mu_2$ represents the average running pace from 2005-2006.
+
+\textbf{Fit:} \quad $Y = 7.914 + \epsilon$ for 2002-2004 \\ \quad \quad $Y = 8.411 + \epsilon$ for 2005-2006
+
+\textbf{Assess:} \quad We test for the hypotheses:
+
+\quad \quad $H_0: \mu1 - \mu2 = 0$
+
+\quad \quad $H_a: \mu1 - \mu2 \neq 0$
+
+\quad \quad The conditions have been verified in Problem 0.26
+\end{enumerate}
+```{r, echo=FALSE}
+t.test(x=young_pace,
+       y=old_pace,
+       alternative="two.sided",
+       mu=0)
+```
+\quad \quad $p\approx 0 < 0.05$ so we reject the null hypothesis. There is a statistically significant difference in pacing for runs before and after 2004.
+
+\quad \textbf{Use: } \quad There is enough evidence to suggest that the runner had different pacings when he was young compared to when he was old.
+\begin{enumerate}
+\item[b)] \textbf{Choose: } \quad $Y = \mu_i + \epsilon$ where $\mu_1$ represents the average daily distance from 2002-2004, and $\mu_2$ represents the average daily distance from 2005-2006.
+
+\textbf{Fit:} \quad $Y = 7.492 + \epsilon$ for 2002-2004 \\ \quad \quad $Y = 6.629 + \epsilon$ for 2005-2006
+
+\textbf{Assess:} \quad We test for the hypotheses:
+
+\quad \quad $H_0: \mu1 - \mu2 = 0$
+
+\quad \quad $H_a: \mu1 - \mu2 \neq 0$
+
+\quad \quad The conditions have been verified in Problem 0.26
+\end{enumerate}
+```{r, echo=FALSE}
+t.test(x=young_dist,
+       y=old_dist,
+       alternative="two.sided",
+       mu=0)
+```
+\quad \quad $p\approx 0 < 0.05$ so we reject the null hypothesis. There is a statistically significant difference in distance ran per day before and after 2004.
+
+\quad \textbf{Use: } \quad There is enough evidence to suggest that the runner ran different distances per day when he was young compared to when he was old.
+
+\section*{Problem 0.30}
+```{r, include=FALSE}
+men_pulse <- D1S$Pulse[D1S$Sex=="M"]
+wom_pulse <- D1S$Pulse[D1S$Sex=="F"]
+men_pulse <- men_pulse[!is.na(men_pulse)]
+wom_pulse <- wom_pulse[!is.na(wom_pulse)]
+```
+\begin{enumerate}
+\item[a)] effect size = $\frac{66.65 - 67.82}{11.31} = 0.103$, so there is a small difference in pulses between men and women
+\item[b)] effect size = $\frac{|7.96 - 8.16|}{0.48} = 0.407$, so there is a moderate effect of changing the distance of runs on the pace.
+
+\end{enumerate}
+\section*{Problem 0.31}
+```{r, include=FALSE}
+men <- Handwriting$Both[Handwriting$Gender %in% 0]
+wom <- Handwriting$Both[Handwriting$Gender %in% 1]
+men <- men[!is.na(men)]
+wom <- wom[!is.na(wom)]
+```
+\begin{enumerate}
+\item[a)] effect size = 0.228, so there is a small effect of training before or after 2004 had on the mean miles per day for training.
+\item[b)] effect size = 1.072, so there is a large difference in the guessing abilities between men and women.
+\end{enumerate}

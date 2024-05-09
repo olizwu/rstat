@@ -1,0 +1,138 @@
+---
+title: "Day13"
+author: "Olivia Wu"
+date: "2024-04-15"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+HP <- read_csv("csv/CSV Data Set Files by Descriptive Title/HighPeaks.csv")
+SAT <- read_csv("csv/CSV Data Set Files by Descriptive Title/SATGPA.csv")
+setwd("Chapter 4")
+```
+\section*{Problem 4.20}
+
+\quad a) We are 90\% confident that the true slope of the population regression lies in the interval (0.914, 1.240)
+```{r,echo=FALSE}
+model1 <- lm(Length ~ Time, data=HP)
+summary(model1)
+```
+
+\quad b) The histogram is slightly skewed right. The slopes tend to be around 1.1.
+
+```{r,echo=FALSE}
+set.seed(123)
+boot <- do(5000)*lm(Length ~ Time, data=resample(HP))
+hist(boot$Time, xlab="Slopes",main="Histogram of Slopes for 5000 Bootstrap Samples")
+```
+
+\quad c) The mean is about 1.09, and the standard deviation is around 0.12. They are both just slightly above the numbers in our computer output of the original model.
+```{r}
+pt <- mean(boot$Time)
+se <- sd(boot$Time)
+c(pt,se)
+```
+
+\quad d) \textcolor{red}{pt estimate is the initial value}
+```{r}
+sum <- summary(model1)
+paste("(",pt-qnorm(0.95)*se,",",pt+qnorm(0.95)*se,")")
+paste("(",sum$coefficients[2,1]-qnorm(0.95)*se,",",sum$coefficients[2,1]+qnorm(0.95)*se,")")
+```
+
+\quad e) 
+```{r}
+lower <- quantile(boot$Time, 0.05)
+upper <- quantile(boot$Time, 0.95)
+paste("(",lower,",",upper,")")
+
+```
+
+\quad f)
+```{r}
+newlower <- 2*1.07711 - upper
+newupper <- 2*1.07711 - lower
+paste("(",newlower,",",newupper,")")
+```
+
+\quad g) The intervals are all very similar.
+
+\section*{Problem 4.21}
+
+Save initial model:
+```{r}
+model1 <- lm(Length ~ Time, data=HP)
+```
+
+Save initial standard deviation of the error term:
+```{r}
+initial <- summary(model1)$sigma
+```
+
+Simulate:
+```{r,echo=FALSE}
+set.seed(123)
+boot <- do(5000)*lm(Length ~ Time, data=resample(HP))
+hist(boot$sigma, xlab="Standard Deviation of Error", main="Histogram of Standard Deviation of Error")
+```
+
+Interval 1:
+```{r}
+pt <- mean(boot$sigma)
+se <- sd(boot$sigma)
+paste("(",initial+qnorm(0.05)*se,",",initial+qnorm(0.95)*se,")")
+```
+
+Interval 2:
+```{r}
+lower <- quantile(boot$sigma, 0.05)
+upper <- quantile(boot$sigma,0.95)
+paste("(",lower,",",upper,")")
+```
+
+Interval 3:
+```{r}
+paste("(",2*initial - upper,",",2*initial-lower,")")
+```
+
+\section*{Problem 4.23}
+
+\quad a) The initial correlation is $r=$0.244. The histogram is roughly symmetric, and the normal probability plot is roughly linear, suggesting that the boostrap distribution is normal.
+
+```{r}
+initial <- cor(VerbalSAT~GPA, data=SAT)
+boot <- do(5000)*cor(VerbalSAT~GPA, data=resample(SAT))
+hist(boot$cor, xlab="Correlation", main="Histogram of Correlation")
+qqnorm(boot$cor)
+```
+
+\quad b) The two intervals are (-0.107, 0.596) and (-0.090, 0.615). They are similar.
+
+```{r,echo=FALSE}
+#z interval with boostrap SE
+se <- sd(boot$cor)
+paste("(",initial+qnorm(0.025)*se,",",initial+qnorm(0.975)*se,")")
+#quantile
+lower <- quantile(boot$cor, 0.025)
+upper <- quantile(boot$cor, 0.975)
+paste("(",lower,",",upper,")")
+```
+
+\quad c) 0 is in both confidence intervals. We are not confident that there is a relationship between Verbal SAT scores and GPA.

@@ -1,0 +1,175 @@
+---
+title: "Day4cont"
+author: "Olivia Wu"
+date: "2024-02-20"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Cater <- read_csv("csv/CSV Data Set Files by Descriptive Title/Caterpillars.csv")
+MthEnr <- read_csv("csv/CSV Data Set Files by Descriptive Title/MathEnrollment.csv")
+bball <- read_csv("csv/CSV Data Set Files by Descriptive Title/BaseballTimes2017.csv")
+setwd("Chapter 1")
+```
+<!-- pp.52-55: # 30, 34, 45, 46. -->
+
+\section*{Problem 1.30}
+\quad a) The scatterplot shows a strong curve.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Cater$Nassim~Cater$Mass, main="Nitrogen Assimilation vs. Mass", xlab="Mass (g)", ylab="Nitrogen Assimilation")
+
+```
+
+\quad b) The scatterplot is more linear, but there are outliers as the log mass gets closer to 1.
+
+```{r, echo=FALSE, out.width="60%"}
+logNassim <- Cater$LogNassim
+logMass <- Cater$LogMass
+plot(logNassim~logMass, main="Log Nitrogen Assimilation vs. Log Mass", xlab="Log Mass (g)", ylab="Log Nitrogen Assimilation")
+
+```
+
+\quad c) I would rather use the plot in part (b) because it is more linear. The equation for this is $\hat{logNassim}=-1.887 + 0.371\cdot \textit{logMass}$
+```{r, echo=FALSE}
+model <- lm(logNassim~logMass)
+summary(model)
+
+```
+
+\quad d) Map: 1 (red), 2 (blue), 3 (black), 4 (green), 5 (orange). Each group was mostly linear, but the stage 4 and 5 groups showed more curve.
+
+```{r, echo=FALSE, out.width="60%"}
+color <- c("red", "blue", "black", "green", "orange")
+map <- color[Cater$Instar]
+plot(y=logNassim,
+     x=logMass, main="Log Nitrogen Assimilation vs. Log Mass", xlab="Log Mass (g)", ylab="Log Nitrogen Assimilation",
+     col=map)
+
+```
+
+\quad e) Map: Fgp (red), not Fgp (blue). The free-growth period plants had a more linear trend.
+
+```{r, echo=FALSE, out.width="60%"}
+map <- ifelse(Cater$Fgp %in% "Y",1,2)
+plot(logNassim~logMass, main="Log Nitrogen Assimilation vs. Log Mass", xlab="Log Mass (g)", ylab="Log Nitrogen Assimilation",
+     col=color[map])
+
+```
+
+\section*{Problem 1.34}
+\quad a) The trend over time is different for each semester. In the fall, it is a weak negative association. In the spring, it is a weak positive association.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Fall~AYear, data=MthEnr, main="Math Enrollment in the Fall from 2001-2011", xlab="Year", ylab="Enrollment")
+```
+```{r,echo=FALSE,out.width="60%"}
+plot(Spring~AYear, data=MthEnr, main="Math Enrollment in the Spring from 2001-2011", xlab="Year", ylab="Enrollment")
+```
+
+\quad b) I disagree with the statement because the scatterplot of fall vs. spring has a very weak negative linear association.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Spring~Fall, data=MthEnr, main="Spring vs. Fall", xlab="Fall", ylab="Spring")
+
+```
+
+\quad c) They could be talking about the 2003 year where the Fall enrollment was 343 and the Spring enrollment was 288.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Spring~Fall, data=MthEnr, main="Spring vs. Fall", xlab="Fall", ylab="Spring")
+model <- lm(Spring~Fall, data=MthEnr)
+summary(model)
+abline(model, col="blue")
+
+```
+
+\quad d) The slope of the fitted line without the point (-1.048) is less than the slope of the fitted line with the point (-0.327). Since the slope changed a lot, this point is influential.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Spring[Fall != 343]~Fall[Fall != 343], data=MthEnr, main="Spring vs. Fall (Point Removed)", xlab="Fall", ylab="Spring")
+model <- lm(Spring[Fall != 343]~Fall[Fall != 343], data=MthEnr)
+summary(model)
+abline(model, col="blue")
+
+```
+
+\section*{Problem 1.45}
+\quad a) The times do not have a symmetric distribution. They are centered around 194.5 minutes, and there is a moderate spread.
+
+```{r, echo=FALSE, out.width="60%"}
+summary(bball$Time)
+boxplot(bball$Time,
+        main="Boxplot of Times",
+        xlab="Time (minute)",
+        horizontal=TRUE)
+
+```
+
+\quad b) The plot with Runs is most linear.
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(Time~Runs, data=bball, main="Time vs. Runs", xlab="Runs", ylab="Time (minute)")
+plot(Time~Margin, data=bball, main="Time vs. Margin", xlab="Margin", ylab="Time (minute)")
+plot(Time~Pitchers, data=bball, main="Time vs. Pitchers", xlab="Pitchers", ylab="Time (minute)")
+plot(Time~Attendance, data=bball, main="Time vs. Attendance", xlab="Attendance", ylab="Time (minute)")
+par(mfrow=c(1,1))
+```
+
+\quad c) The best predictor variable is the number of runs in a game. The regression equation is $\hat{Time} = 148.043 + 4.181 \cdot \textit{Runs}$. On average, an increase of 1 run tends to result in an increase of 4.181 minutes of Time of the game.
+
+```{r, echo=FALSE, out.width="60%"}
+plot(Time~Runs, data=bball, main="Time vs. Runs", xlab="Runs", ylab="Time (minute)")
+model <- lm(Time~Runs, data=bball)
+summary(model)
+abline(model, col="blue")
+
+```
+
+\quad d) The residual plot shows an even scatter, but the boxplot implies a slight right skew.
+
+```{r, echo=FALSE, out.width="60%"}
+res <- resid(model)
+fit <- fitted(model)
+boxplot(res, main="Residuals", horizontal=TRUE)
+```
+
+```{r,echo=FALSE,out.width="60%"}
+plot(res~fit, main = "Residuals vs Fit", xlab = "Fitted Time", ylab = "Residuals")
+abline(0,0,col="blue")
+```
+
+\section*{Problem 1.46}
+\quad a) The CIN-MIL point has an extreme x-value and it is far from the mean value. It has leverage. However, the slope of the regression line without the CIN-MIL point would be 4.299 compared to 4.181. The slope would not change much, so the CIN-MIL point is not too influential.
+```{r, echo=FALSE, out.width="60%"}
+plot(Time[Time != 235]~Runs[Time != 235], data=bball, main="Time vs. Runs", xlab="Runs", ylab="Time (minute)")
+model <- lm(Time[Time != 235]~Runs[Time != 235], data=bball)
+summary(model)
+abline(model, col="blue")
+
+```
+
+\quad b) look to part a)
+
+\quad c) Removing the point had little change on the linearity of the other graphs. \textcolor{red}{The CIN-MIL point has an influence on distinguishing the more linear pattern between Time vs. Runs and Time vs. Pitchers}
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(Time[Time != 235]~Runs[Time != 235], data=bball, main="Time vs. Runs", xlab="Runs", ylab="Time (minute)")
+plot(Time[Time != 235]~Margin[Time != 235], data=bball, main="Time vs. Margin", xlab="Margin", ylab="Time (minute)")
+plot(Time[Time != 235]~Pitchers[Time != 235], data=bball, main="Time vs. Pitchers", xlab="Pitchers", ylab="Time (minute)")
+plot(Time[Time != 235]~Attendance[Time != 235], data=bball, main="Time vs. Attendance", xlab="Attendance", ylab="Time (minute)")
+par(mfrow=c(1,1))
+
+```

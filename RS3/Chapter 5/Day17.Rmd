@@ -1,0 +1,129 @@
+---
+title: "Day17"
+author: "Olivia Wu"
+date: "2024-04-30"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+library(mosaic)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+Hawk <- read_csv("csv/CSV Data Set Files by Descriptive Title/Hawks.csv")
+FanBase <- read_csv("csv/CSV Data Set Files by Descriptive Title/FantasyBaseball.csv")
+setwd("Chapter 5")
+```
+<!-- Page 245-254# 8, 10, 43, 49, 67, 69 -->
+
+<!-- For #43 use Weight for your variable -->
+
+\section*{Problem 5.8}
+C
+
+\section*{Problem 5.10}
+\quad a) The variability within each group changes a lot across groups.
+
+\quad b) The slope tells us which transformation to use after saying $p=1-s$.
+
+\section*{Problem 5.43}
+\quad a) The points look like they could fit on a line, but barely.
+
+\quad b) The slope of the line is 0.4298.
+
+\quad c) $p=0.5702$, which suggests a square root transformation.
+
+```{r,echo=FALSE, out.width="60%"}
+stat <- favstats(Weight~Species,data=Hawk)[c("Species","mean","sd","n")]
+plot(log(stat$sd)~log(stat$mean), pch=19)
+abline(lm(log(stat$sd)~log(stat$mean)),col="blue")
+```
+
+\section*{Problem 5.49}
+
+\quad a) 
+
+```{r,echo=FALSE}
+Hawk$Weight <- sqrt(Hawk$Weight)
+```
+
+```{r,echo=FALSE}
+favstats(Weight~Species,data=Hawk)[c("Species","mean","sd","n")]
+```
+
+\quad b) The average weight tends to be higher for RT, then CH, then SS. 
+
+```{r,echo=FALSE, out.width="60%"}
+boxplot(Weight~Species, data=Hawk, horizontal=FALSE)
+```
+
+\quad c) The IQR are roughly the same size, suggesting similar variability. There are many outliers for each groups, suggesting a skew. Thus, the normality condition is not met, and an anova test would be inappopriate.
+
+\section*{Problem 5.67}
+
+\quad a) The points on the right do not lie close to the line, there seems to be a curved pattern. This fails the normality condition.
+
+```{r,echo=FALSE, out.width="60%"}
+model <- aov(Time~Person, data=FanBase)
+qqnorm(model$residuals)
+qqline(model$residuals)
+```
+
+\quad b) The transformed data fits the line much better, and it has better normality.
+
+```{r,echo=FALSE}
+FanBase$LnTime <- log(FanBase$Time)
+model <- aov(LnTime~Person, data=FanBase)
+qqnorm(model$residuals)
+qqline(model$residuals)
+```
+
+\section*{Problem 5.69}
+
+```{r,echo=FALSE}
+FanBase$Round <- factor(FanBase$Round)
+```
+
+Original data: the qqplot is not linear, so normality fails.
+
+```{r, out.width="60%"}
+model <- aov(Time~Round, data=FanBase)
+qqnorm(model$residuals)
+qqline(model$residuals)
+```
+
+We check log(s) vs. log(ave): the points are roughly linear, and we see that 1-slope $\approx$ 0.035, so we proceed to use logarithms to transform the data.
+
+```{r, out.width="60%"}
+stat <- favstats(Time~Round,data=FanBase)[c("Round","mean","sd","n")]
+plot(log(stat$sd)~log(stat$mean), pch=19)
+abline(lm(log(stat$sd)~log(stat$mean)),col="blue")
+```
+
+Transformed data: The points are much more linear, and they meet the normality condition.
+
+```{r, out.width="60%"}
+model <- aov(LnTime~Round, data=FanBase)
+qqnorm(model$residuals)
+qqline(model$residuals)
+```
+
+Anova: $p=0.713 > 0.05$, so we fail to reject the null hypothesis. There is not enough evidence to suggest that some rounds tend to have significantly longer selection times than other rounds.
+
+```{r}
+summary(model)
+
+```

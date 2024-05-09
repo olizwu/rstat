@@ -1,0 +1,209 @@
+---
+title: "Day5"
+author: "Olivia Wu"
+date: "2024-02-22"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+brainpH <- read_csv("csv/CSV Data Set Files by Descriptive Title/BrainpH.csv")
+cereal <- read_csv("csv/CSV Data Set Files by Descriptive Title/Cereal.csv")
+LDLB <- read_csv("csv/CSV Data Set Files by Descriptive Title/LewyDLBad.csv")
+RT <- read_csv("csv/CSV Data Set Files by Descriptive Title/RailsTrails.csv")
+MetaRate <- read_csv("csv/CSV Data Set Files by Descriptive Title/MetabolicRate.csv")
+Handwriting <- read_csv("csv/CSV Data Set Files by Descriptive Title/Handwriting.csv")
+GHouse <- read_csv("csv/CSV Data Set Files by Descriptive Title/GrinnellHouses.csv")
+setwd("Chapter 2")
+```
+<!--  Chapter 2 exercises Page 77-81: #2, 3,4, (11–19) odd, 51, 52, 61 -->
+
+\section*{Problem 2.2}
+\quad False \textcolor{red}{True}
+\section*{Problem 2.3}
+\quad True
+\section*{Problem 2.4}
+\quad False
+\section*{Problem 2.11}
+\quad Given: $n=40, \hat{\beta_1}=15.5, SE_{\hat{\beta_1}}=3.4$, all conditions met
+```{r,include=FALSE}
+sampleBeta <- 15.5
+SEbeta <- 3.4
+```
+\quad a)\begin{enumerate}
+\item[] \textbf{State:} $H_0: \beta_1=0$
+\quad $H_a: \beta_1 > 0$
+\item[]\textbf{Plan:} All conditions met
+\item[]\textbf{Do:} \[t =\frac{\hat{\beta_1}-\beta_1}{SE_{\hat{\beta_1}}} = \frac{15.5-0}{3.4} = 4.559\]
+\[df=n-2=38 \]
+\[P(t > 4.559) = 2.61 \times 10^-5\]
+\item[]\textbf{Conclude:} Since $p=2.61\times 10^-5 < 0.05$, we reject the null hypothesis. There is enough evidence to suggest that $\beta_1 > 0$
+\end{enumerate}
+
+\quad b) We are 95\% confident that the true slope of the population regression line lies in the interval (8.617, 22.383).
+```{r}
+critT <- qt(0.975, df=38)
+left <- sampleBeta -critT*SEbeta
+right <- sampleBeta + critT*SEbeta
+paste("(",left,",",right,")")
+```
+
+\section*{Problem 2.13}
+\quad a) There seems to be a very weak negative linear relationship between Age and brain pH.
+```{r,echo=FALSE}
+plot(pH~Age, data=brainpH, main="pH vs. Age", xlab="Age", ylab="pH")
+model <- lm(pH~Age, data=brainpH)
+abline(model, col="blue")
+summary(model)
+```
+\quad b) We set up the hypotheses: $H_0: \beta_1 = 0$ and $H_a: \beta_1 < 0$. The summary output shows the slope has a $t-$value of $-0.17$ and the $p$-value $=0.866 > 0.05$. There is not enough evidence to reject the null hypothesis, which supports our suspicions from part (a).
+
+\section*{Problem 2.15}
+\quad a) $H_0: \beta_1 = 0$
+\quad \quad $H_a: \beta_1 > 0$
+
+From the computer output, we know $t=3.507$ and $p=0.0013$ for $df=34$. Since $p<0.05$, we reject the null hypothesis and there is enough evidence to suggest a linear relationship between sugar content and calories.
+```{r}
+model <- lm(Calories~Sugar, data=cereal)
+summary(model)
+
+```
+
+\quad b) We are 95\% confident that the true average increase in calories per gram of sugar lies in the interval (1.04, 3.92).
+```{r}
+critT <- qt(0.975, df=34)
+sampleBeta <- model$coefficients[2]
+SEbeta <- 0.7074
+left <- sampleBeta - critT*SEbeta
+right <- sampleBeta + critT*SEbeta
+paste("(",left,",",right,")")
+```
+
+\section*{Problem 2.17}
+\quad a) The $p$-value of the slope statistic is 0.00516 < 0.05, so the slope is statistically significant.
+```{r}
+model <- lm(MMSE~APC, data=LDLB)
+summary(model)
+```
+\quad b) The residuals are randomly scattered and there is uniform variance, the residuals are centered roughly around zero.
+```{r, echo=FALSE, out.width="80%"}
+plot(resid(model)~fitted(model),
+     main="Residual vs. Fitted",
+     xlab="Fitted",
+     ylab="Residual")
+```
+
+\quad c) $\hat{\beta_1} = 1.3444, SE_{\beta_1}=0.4225$
+```{r}
+summary(model)
+```
+
+\quad d) The confidence interval (0.612, 2.077) does not contain 0, so we can say with 90\% confidence there is a statistically significant linear relationship between $MMSE$ and $APC$.
+```{r}
+critT <- qt(0.95, df=18)
+SEbeta <- 0.4225
+sampleBeta <- 1.3444
+left <- sampleBeta - critT*SEbeta
+right <- sampleBeta + critT*SEbeta
+paste("(",left,",",right,")")
+
+```
+
+\section*{Problem 2.19}
+\quad a) On average, the 2007 selling price adjusted to 2014 dollars is expected to decrease by $54.43. \[ \hat{adj2007} = 388.2 - 54.43 (distance) \]
+```{r}
+model <- lm(adj2007~distance,data=RT)
+summary(model)
+
+```
+
+\quad b) We are 90\% confident that the true average 2014 dollar increase in 2007 selling price for every foot farther a home is away to a bike trail lies between -\$70,460 and -\$38,390. \textcolor{red}{write in a better way, dollar increase for every foot CLOSER}
+```{r}
+critT <- qt(0.95, df=102)
+sampleBeta <- model$coefficients[2]
+SEbeta <- 9.659
+left <- sampleBeta - critT*SEbeta
+right <- sampleBeta + critT*SEbeta
+paste("(",left,",",right,")")
+```
+
+\quad c) The residuals display a strong right skew in their histogram, so the normality condition is not met. The residuals also do not have constant variance, as they grow larger as the fitted values increased. These may affect the accuracy of our confidence interval.
+
+```{r, echo=FALSE,out.width="50%"}
+hist(resid(model), main="Distribution of Residuals", xlab="Residuals")
+plot(resid(model)~fitted(model), main="Residuals vs Fitted", xlab="Fitted",ylab="Residuals",col="gray")
+abline(0,0,col="blue")
+```
+
+\section*{Problem 2.51}
+\quad a) There is an overall positive linear relationship between an individual's Survey1 and Survey2 results. A person who does well on Survey1 tends to also do well on Survey2.
+
+```{r, echo=FALSE}
+plot(Survey2~Survey1, data=Handwriting,
+     main="Survey2 vs. Survey1",
+     xlab="Survey1",
+     ylab="Survey2")
+model <- lm(Survey2~Survey1, data=Handwriting)
+abline(model,col="blue")
+
+```
+
+\quad b) $\hat{Survey2} = 40.417 + 0.395{\textit{Survey1}}$
+```{r,echo=FALSE}
+summary(model)
+
+```
+
+\quad c) The distribution of residuals is roughly symmetric. The normal quantile plot of the residuals are roughly linear. There is a uniform variance. This is a randomized experiment, so independence is given.
+
+```{r,echo=FALSE}
+par(mfrow=c(2,2))
+hist(resid(model), main="Distribution of Residuals", xlab="Residuals")
+qqnorm(resid(model))
+plot(resid(model)~fitted(model), main="Residuals vs Fitted", xlab="Fitted",ylab="Residuals",col="gray")
+par(mfrow=c(1,1))
+```
+
+\quad d) If $\textit{Survey}1=\textit{Survey}2$, we would expect $\beta_0=0$ and $\beta_1=1$. The computer output shows significant $p$-values for the regression coefficients, so we know the slope is greater than 0. The standard error for slope is only 0.07, so 1 is out of the question.
+
+\section*{Problem 2.52}
+```{r,echo=FALSE}
+model <- lm(SalePrice~ListPrice, data=GHouse)
+summary(model)
+```
+\quad a) We are 95\% confident that the true slope of the population regression line lies between (0.9368, 0.9493). 
+```{r,include=FALSE}
+critT <- qt(0.975, df=927)
+sampleBeta <- model$coefficients[2]
+SEbeta <- 0.003201
+left <- sampleBeta - critT*SEbeta
+right <- sampleBeta + critT*SEbeta
+paste("(",left,",",right,")")
+```
+
+\quad b) The computer output shows that the $p$-value for the intercept is 0.782 > 0.05. Thus, we cannot reject the hypothesis that the true intercept is 0.
+
+\quad c) The confidence interval here is (0.9312, 0.9401). It is less than the interval from (a), where the intercept was negative. After moving it to 0, the slope should be more flat.
+```{r}
+fraction <- GHouse$SalePrice/GHouse$ListPrice
+t.test(fraction, alternative="two.sided", mu=0)
+```
+
+\section*{Problem 2.61}
+\quad a)
+\[ \hat{\beta_1}=0.701\frac{104807}{657}=111.826 \\ \hat{\beta_0}=247235-\hat{\beta_1}2009 =22576.566 \\
+\hat{Gate}=22576.556+11.826Enroll\]
+\quad b) 49.14\% of the variation is accounted for by the enrollments. \[r^2 = 0.701^2 = 0.4914\]
+\quad c) \[\hat{Gate}=22576.566+111.826\cdot1445=\boxed{184165 \text{ people}}\]
+\quad d) \[\hat{Gate}=22576.566+111.826\cdot2200 = 268593.766 \\
+\text{residual}=130,000-\hat{Gate}=\boxed{-138593.766}\]

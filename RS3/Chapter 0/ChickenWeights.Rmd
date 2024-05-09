@@ -1,0 +1,95 @@
+---
+title: "Chicken Weight - Olivia Wu"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-01-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\section*{Setup}
+```{r}
+data(ChickWeight)
+head(ChickWeight)
+library(dplyr)
+library(tinytex)
+library(tidyverse)
+```
+## Summary Exercises
+
+1. Find the average weight of a chicken on any diet on the 18th day of their feeding.
+```{r}
+mean(ChickWeight$weight[ChickWeight$Time %in% 18])
+```
+2.  Tabulate the total number of chickens that were on each diet.
+```{r}
+table(ChickWeight$Diet)
+```
+3. Find the standard deviation of chicken weights on Day 0. Then, do the same for Day 21.
+```{r}
+sd(ChickWeight$weight[ChickWeight$Time %in% 0])
+sd(ChickWeight$weight[ChickWeight$Time %in% 21])
+```
+4. Finally, use dplyr to find the mean weight and standard deviation of all Chickens on Day 21, grouped by diet. Which diet led to the heaviest chickens? (When you do the summarize function, use mean_weight and std_dev as your labels).
+```{r}
+ChickWeight %>%
+  dplyr::filter(Time==21) %>%
+  dplyr::group_by(Diet)%>% 
+  dplyr::select(weight) %>%
+  summarize(mean_weight= mean(weight), std_dev= sd(weight))
+```
+
+## Visualization Exercises
+1. Filter the weight of chicken weights on Day 14 (remember that’s the Time variable) that were on Diet 3, and save that as wt_day14_diet3. Then graph this variable in a dot plot. Use the following for your parameters:
+\begin{itemize}
+\item Title: “Weights of Chickens on Diet 3, on Day 14”
+\item x-axis: “Weight (grams)”
+\end{itemize}
+```{r}
+wt_day14_diet3 <- ChickWeight %>%
+  dplyr::filter(Time==14) %>%
+  dplyr::filter(Diet==3) %>%
+  dplyr::select(weight)
+stripchart(wt_day14_diet3$weight, method="stack", offset=.5, at=0, pch=19, col="blue",main="Weights of Chickens on Diet 3, on Day 14", xlab="Weight (grams)")
+```
+2. Create a histogram of chicken weights on Day 0 , for any diet. Use the following for your parameters:
+\begin{itemize}
+\item Title: “Chicken Weights on Day 0”
+\item x-axis: “Weight (grams)”
+\item y-axis: “Number of Chickens”
+\end{itemize}
+```{r}
+day0wt <- ChickWeight %>%
+  dplyr::filter(Time==0) %>%
+  dplyr::select(weight)
+hist(day0wt$weight, main="Chicken Weights on Day 0", xlab="Weight (grams)", ylab = "Number of Chickens")
+```
+3. Create boxplots of chicken weights on Day 21, grouped by Diet. Use the following parameters:
+\begin{itemize}
+\item Title: “Comparison of Chicken Diets”
+\item x-axis: “Diet”
+\item y-axis: “Weight (grams)”
+\item You should also label each diet as “Diet 1”, “Diet 2”, and so forth.
+\item Colors: From left to right, your boxplots should be “pink”, “green”, “skyblue”, and “purple” respectively.
+\end{itemize}
+```{r}
+day21 <- ChickWeight %>%
+  dplyr::filter(Time==21)
+boxplot(weight~Diet, data=day21, main= "Comparison of Chicken Diets", xlab="Diet", ylab="Weight (grams)")
+```
+
+## Sampling from a table
+
+
+```{r}
+chicken_sample <- ChickWeight %>%
+  dplyr::filter(Time==18, Diet==1)
+
+chicken_sample<- slice_sample(chicken_sample, n=5, replace=FALSE)
+
+chicken_sample
+```
+

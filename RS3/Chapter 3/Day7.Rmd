@@ -1,0 +1,105 @@
+---
+title: "Day7"
+author: "Olivia Wu"
+date: "2024-03-04"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(BSDA)
+library(effectsize)
+library(HH)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+RT <- read_csv("csv/CSV Data Set Files by Descriptive Title/RailsTrails.csv")
+setwd("Chapter 3")
+```
+
+\section*{Problem 3.1}
+\begin{enumerate}
+\item[a)] A student who got perfect on the midterm and project would have a predicted score of 100 on the final.
+
+\item[b)] \[ \hat{Final}=11.0+0.53(87)+1.20(21)=82.31 \] \[Residual = 80 - 82.31 = \boxed{-2.31} \]
+Michael's final grade was 2.31 points less than what was predicted by the model.
+\end{enumerate}
+
+\section*{Problem 3.3}
+No, the equation only suggests that a point increase in the midterm grade tends to reflect in 0.53 points in the final grade, assuming the project grade is held constant. It says nothing about the strength of the relationship.
+
+\section*{Problem 3.5}
+A one point increase in the project grade is associated with a 1.2 point increase in the final grade, given that the midterm grade does not change.
+
+\section*{Problem 3.7}
+\begin{enumerate}
+\item[a)] True
+\item[b)] False
+\end{enumerate}
+
+\section*{Problem 3.17}
+\begin{enumerate}
+\item[a)] $H_0: \beta_2=0$
+
+\quad $H_a: \beta_2 \neq 0$
+
+It is given that all conditions are met.
+
+The test statistic given by output is $t=1.08$. With 228 degrees of freedom, $p = 2\cdot P(t > 1.08) = 2 \cdot 0.1406 = 0.282$. Since $p>0.05$, we fail to reject the null hypothesis. There is not enough evidence to suggest a linear relationship between weight and active pulse rates.
+
+\item[b)] We are 90\% confident that as the weight increases by 1 pound, the increase in active pulse rate lies between -0.0182 and 0.0866, assuming all other variables stay the same.
+\end{enumerate}
+```{r, echo=FALSE}
+critT <- qt(0.95, df=228)
+lower <- 0.0342 - critT*0.03173
+upper <- 0.0342 + critT*0.03173
+paste("(",lower,", ",upper,")",sep="")
+
+```
+\begin{enumerate}
+\item[c)] \[ \hat{Active} = 11.8 + 1.12(76) + 0.0342(200) - 1.09(7) = \boxed{96.13 \text{ bpm}}\]
+\end{enumerate}
+
+\section*{Problem 3.18}
+\begin{enumerate}
+\item[a)]
+\end{enumerate}
+
+```{r, echo=FALSE}
+simple <- lm(adj2007~distance, data=RT)
+summary(simple)
+```
+
+\begin{enumerate}
+\item[b)] The estimated coefficients of $distance$ are -54.427 and -16.486, and the $R^2$ values are 0.2374 and 0.7655. The second model really improved the $R^2$ value.
+\end{enumerate}
+
+```{r, echo=FALSE}
+multi <- lm(adj2007~distance + squarefeet, data=RT)
+summary(multi)
+```
+
+\begin{enumerate}
+\item[c)] In the simple regression model, we expect for every mile increase in distance to a trail, the house price increases by a value between -\$73.41 and -\$35.45. If we adjust for the house size, we expect the increase to be between -\$28.27 and  -\$4.70. By adding $squarefeet$ into the regression, the width of the confidence interval decreased and the values shifted higher.
+\end{enumerate}
+
+```{r, echo=FALSE}
+critT <- qt(p=0.975, df=102)
+lower <- -54.427 - critT*9.569
+upper <- -54.427 + critT*9.569
+paste("(",lower,", ",upper,")",sep="")
+critT <- qt(p=0.975, df=101)
+lower <- -16.486 - critT*5.942
+upper <- -16.486 + critT*5.942
+paste("(",lower,", ",upper,")",sep="")
+```
+\begin{enumerate}
+\item[d)] \[\hat{Price} = 109.742 - 16.486(0.5) + 150.78(1500) = 226,271.499\] We expect the house to cost \$266,271.
+\end{enumerate}

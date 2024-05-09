@@ -1,0 +1,106 @@
+---
+title: "Day10"
+author: "Olivia Wu"
+date: "2024-03-19"
+header-includes:
+   - \usepackage{amsmath}
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tinytex)
+library(readr)
+library(ggplot2)
+library(BSDA)
+library(leaps)
+library(olsrr)
+library(car)
+```
+```{r, include=FALSE}
+setwd("C:/Users/ozwu/OneDrive/Documents/SCHOOL/RS3")
+HP <- read_csv("csv/CSV Data Set Files by Descriptive Title/HighPeaks.csv")
+MLB <- read_csv("csv/CSV Data Set Files by Descriptive Title/MLBStandings2016.csv")
+setwd("Chapter 4")
+```
+
+\section*{Problem 4.2}
+\quad a) The correlation coefficient between these two variables is $0.016$, which is extremely small. Additionally, the scatterplot shows a very weak linear relationship with no clear direction.
+
+```{r,echo=FALSE}
+cor(HP$Time, HP$Elevation)
+plot(Time ~ Elevation, data=HP)
+```
+
+\quad b) The $p$-value of Elevation is 0.016 < 0.05, so it is significant. Both predictors can explain the model because they each have small $p$-values. The $R^2$ is larger for the two-predictor model.
+```{r,echo=FALSE}
+model <- lm(Time ~ Elevation+Length, data=HP)
+model1 <- lm(Time~Elevation, data=HP)
+model2 <- lm(Time~Length, data=HP)
+summary(model)
+summary(model1)
+summary(model2)
+```
+
+\quad c) There is a negative association between the two models, which suggests that adding Elevation is significant.
+```{r,echo=FALSE}
+model1 <- lm(Time ~ Elevation, data=HP)
+model2 <- lm(Elevation ~ Length, data=HP)
+plot(resid(model2) ~ resid(model1))
+abline(lm(resid(model2)~resid(model1)), col="blue",
+       xlab = "Residuals for Time vs. Elevation",
+       ylab = "Residuals for Elevation vs. Length")
+```
+
+\section*{Problem 4.3}
+\quad a) The best predictors would be ERA, WHIP, HitsAllowed, StrikeOuts, Runs, and more.
+```{r,echo=FALSE}
+MLmod <- MLB[,-c(1,3,4,5)]
+MLmod$League <- factor(MLmod$League)
+MLmod$League <- as.numeric(MLmod$League)
+cor(MLB$WinPct, MLmod)
+```
+If we start with ERA, we get: 
+\[
+WinPct = \beta_0 + \beta_1 ERA + \beta_2Runs + \beta_3Saves + \beta_4 WHIP + \epsilon
+\]
+The $R^2$ values is 0.8863.
+```{r,echo=FALSE}
+full <- lm(MLB$WinPct~.,data=MLmod)
+none <- lm(MLB$WinPct~1, data=MLmod)
+MSE = (summary(full)$sigma^2)
+step(none, scope=list(upper=full), scale=MSE, directions="forward",steps=4,trace=0)
+summary(lm(MLB$WinPct~ERA + Runs + Saves + WHIP, data=MLmod))
+```
+
+\quad b) The first time around, we drop Doubles. The second time, we drop SB. Then StrikeOuts,SLG, Triples, HR, RBI, ERA, OBP, HitsAllowed, Walks, and Hits. The final predictors or Saves, WHIP, Runs, and BattingAverage. The final $R^2$ is 0.8836.
+```{r,include=FALSE}
+full <- lm(MLB$WinPct~.,data=MLmod)
+none <- lm(MLB$WinPct~1, data=MLmod)
+step(full, scope=list(lower=none), scale=MSE, directions="backward",steps=14,trace=0)
+summary(lm(MLB$WinPct ~ BattingAverage + Runs + Saves + WHIP,data=MLmod))
+```
+
+\quad c) The output shows the best predictors are Runs, Doubles, Saves, and WHIP. $R^2$ is 0.885.
+```{r,echo=FALSE}
+all<- regsubsets(MLB$WinPct~., nbest=1, data=MLmod)
+summary(all)
+summary(lm(MLB$WinPct ~ Runs + Doubles + Saves + WHIP, data=MLmod))
+```
+
+\quad d) The $C_p$ for each model is 11.11, 11.885, and 10.537.
+```{r,echo=FALSE}
+MSE <- (summary(lm(MLB$WinPct~.,data=MLmod))$sigma)^2
+model1 <- lm(MLB$WinPct ~ ERA + WHIP + Runs + Saves, data=MLB)
+model2 <-lm(MLB$WinPct ~ Saves + WHIP + Runs + BattingAverage, data=MLB)
+model3 <- lm(MLB$WinPct ~ Runs + Doubles + Saves + WHIP, data=MLmod)
+
+extractAIC(model1,scale=MSE)
+extractAIC(model2, scale=MSE)
+extractAIC(model3, scale=MSE)
+```
+
+\quad e) I would use the third model because it has the lowest $C_p$ and highest $R^2$.
